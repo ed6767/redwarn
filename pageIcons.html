@@ -1,0 +1,49 @@
+DO NOT REMOVE THIS LINE */
+
+if (mw.config.get("wgRelevantPageName").includes("User:") || mw.config.get("wgRelevantPageName").includes("User_talk:")) {
+    document.getElementsByClassName("mw-indicators mw-body-content")[0].innerHTML += `
+        <!-- BEGIN USER ONLY ICONS -->
+        &nbsp;&nbsp;&nbsp;
+        <div id="newUsrMsg" class="icon material-icons"><span style="cursor: pointer;" onclick="wikiEditor.ui.newMsg();">send</span></div>
+        <div class="mdl-tooltip mdl-tooltip--large" for="newUsrMsg">
+            New Message
+        </div>
+
+        <div id="welcomeUsr" class="icon material-icons"><span style="cursor: pointer;" onclick="wikiEditor.info.quickWelcome();">sentiment_satisfied_alt</span></div>
+        <div class="mdl-tooltip mdl-tooltip--large" for="welcomeUsr">
+            Welcome
+        </div>
+
+        <div id="warnUsr" class="icon material-icons"><span style="cursor: pointer;" onclick="wikiEditor.ui.beginWarn();">report</span></div>
+        <div class="mdl-tooltip mdl-tooltip--large" for="warnUsr">
+            Send Notice
+        </div>
+
+        <div id="reportUsr" class="icon material-icons"><span style="cursor: pointer;" onclick="alert('action here!');">gavel</span></div>
+        <div class="mdl-tooltip mdl-tooltip--large" for="reportUsr">
+            Report to Admin
+        </div>
+    `;
+} // end this section
+document.getElementsByClassName("mw-indicators mw-body-content")[0].innerHTML += `
+    &nbsp;&nbsp;&nbsp;
+    <!-- START PAGE ONLY ICONS -->
+
+    <div id="LockPg" class="icon material-icons"><span style="cursor: pointer;" onclick="alert('action here!');">lock</span></div>
+    <div class="mdl-tooltip mdl-tooltip--large" for="LockPg">
+        Request Page Protection
+    </div>
+
+    <div id="delPg" class="icon material-icons"><span style="cursor: pointer;" onclick="alert('action here!');">delete</span></div>
+    <div class="mdl-tooltip mdl-tooltip--large" for="delPg">
+        Start Deletion Discussion
+    </div>
+
+    <div id="SdelPg" class="icon material-icons"><span style="cursor: pointer;" onclick="alert('action here!');">delete_forever</span></div>
+    <div class="mdl-tooltip mdl-tooltip--large" for="SdelPg">
+        Request Speedy Deletion
+    </div>
+`;
+
+
+/* DO NOT REMOVE THIS LINE

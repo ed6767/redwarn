@@ -21,46 +21,18 @@ var wikiEditor = {
         },
 
         "pageIcons" : ()=> {
-            document.getElementsByClassName("mw-indicators mw-body-content")[0].innerHTML = `
-            <!-- BEGIN USER ONLY ICONS -->
-            <div id="newUsrMsg" class="icon material-icons"><span style="cursor: pointer;" onclick="alert('action here!');">send</span></div>
-            <div class="mdl-tooltip mdl-tooltip--large" for="newUsrMsg">
-                New Message
-            </div>
-
-            <div id="welcomeUsr" class="icon material-icons"><span style="cursor: pointer;" onclick="alert('action here!');">sentiment_satisfied_alt</span></div>
-            <div class="mdl-tooltip mdl-tooltip--large" for="welcomeUsr">
-                Welcome
-            </div>
-
-            <div id="warnUsr" class="icon material-icons"><span style="cursor: pointer;" onclick="wikiEditor.ui.beginWarn();">report</span></div>
-            <div class="mdl-tooltip mdl-tooltip--large" for="warnUsr">
-                Send Notice
-            </div>
-
-            <div id="reportUsr" class="icon material-icons"><span style="cursor: pointer;" onclick="alert('action here!');">gavel</span></div>
-            <div class="mdl-tooltip mdl-tooltip--large" for="reportUsr">
-                Report to Admin
-            </div>
-
-            &nbsp;&nbsp;&nbsp;
-            <!-- START PAGE ONLY ICONS -->
-
-            <div id="LockPg" class="icon material-icons"><span style="cursor: pointer;" onclick="alert('action here!');">lock</span></div>
-            <div class="mdl-tooltip mdl-tooltip--large" for="LockPg">
-                Request Page Protection
-            </div>
-
-            <div id="delPg" class="icon material-icons"><span style="cursor: pointer;" onclick="alert('action here!');">delete</span></div>
-            <div class="mdl-tooltip mdl-tooltip--large" for="delPg">
-                Start Deletion Discussion
-            </div>
-
-            <div id="SdelPg" class="icon material-icons"><span style="cursor: pointer;" onclick="alert('action here!');">delete_forever</span></div>
-            <div class="mdl-tooltip mdl-tooltip--large" for="SdelPg">
-                Request Speedy Deletion
-            </div>
-            `; 
+            try {
+                /* [[[[include pageIcons.html]]]] */
+            } catch (error) {
+                // Likely invalid theme
+                dialogEngine.create(`
+                <b>Sorry</b><br>
+                RedWarn isn't compatible with this theme. Please revert to a compatible theme to continue using RedWarn.<br>
+                <a href="https://en.wikipedia.org/wiki/Special:Preferences#mw-prefsection-rendering" style="font-size:25px">Go to Theme Preferences</a> <br>
+                <a href='#' onclick='dialogEngine.dialog.close();'>Close</a>`).showModal();
+                return; // Exit
+            }
+            
 
             // Now register all icons
             for (let item of document.getElementsByClassName("mdl-tooltip")) {
@@ -79,7 +51,7 @@ var wikiEditor = {
         }
     },
 
-    "info" : { // we rely on twinkle here, also have to use functions as twinkle may not be init
+    "info" : { // API
         "targetUsername": ()=>{return mw.config.values.wgRelevantUserName},
         "getUsername":  ()=>{return mw.config.values.wgUserName},
 
@@ -127,7 +99,7 @@ var wikiEditor = {
             });
         },
 
-        "addWikiTextToUserPage" : (user, text, underDate, summary, callback) => {
+        "addWikiTextToUserPage" : (user, text, underDate, summary, blacklist, blacklistToast) => {
             // Add text to a page. If underdate true, add it under a date marker
             $.getJSON("https://en.wikipedia.org/w/api.php?action=query&prop=revisions&titles=User_talk:"+user+"&rvslots=*&rvprop=content&formatversion=2&format=json", latestR=>{
                 // Grab text from latest revision of talk page
@@ -135,6 +107,17 @@ var wikiEditor = {
                 let revisionWikitext = latestR.query.pages[0].revisions[0].slots.main.content;
                 let wikiTxtLines = revisionWikitext.split("\n");
                 let finalTxt = "";
+
+                // Check blacklist (if defined)
+                if (blacklist) {
+                    if (revisionWikitext.includes(blacklist)) {
+                        // Don't continue and show toast
+                        wikiEditor.visuals.toast.show(blacklistToast, false, false, 5000);
+                        return;
+                    }
+                }
+
+                // let's continue
                 // Returns date in == Month Year == format and matches
                 let currentDateHeading = ((d)=>{return "== " + ['January','February','March','April','May','June','July','August','September','October','November','December'][d.getMonth()] + " " + (1900 + d.getYear()) + " =="})(new Date);
                 let pageIncludesCurrentDate = wikiTxtLines.includes(currentDateHeading);
@@ -181,8 +164,8 @@ var wikiEditor = {
                     "action": "edit",
                     "format": "json",
                     "token" : mw.user.tokens.get("csrfToken"),
-                    "title" : "User_talk:Sandbox_for_user_warnings", // TESTING ONLY
-                    "summary" : summary + " (RedWarn)",
+                    "title" : "User_talk:"+ user,
+                    "summary" : summary + " (RedWarn)", // summary sign here
                     "text": finalTxt
                 }).done(dt => {
                     // We done. Check for errors, then callback appropriately
@@ -194,13 +177,46 @@ var wikiEditor = {
                         dialogEngine.dialog.showModal();
                     } else {
                         // Success! Redirect to complete page
-                        let reloadNeeded = window.location.href.includes("https://en.wikipedia.org/wiki/"+ mw.config.get("wgRelevantPageName")); // if we are already on the talk page we need to refresh as this would just change the hash
-                        window.location.replace("https://en.wikipedia.org/wiki/"+ mw.config.get("wgRelevantPageName") + "#noticeApplied-" + dt.edit.newrevid + "-" + dt.edit.oldrevid); // go to talk page
+                        let reloadNeeded = window.location.href.includes("https://en.wikipedia.org/wiki/User_talk:"+ user); // if we are already on the talk page we need to refresh as this would just change the hash
+                        window.location.replace("https://en.wikipedia.org/wiki/User_talk:"+ user + "#noticeApplied-" + dt.edit.newrevid + "-" + dt.edit.oldrevid); // go to talk page
                         if (reloadNeeded) {location.reload();}
                         // We done
                     }
                 });
             }); 
+        }, // end addTextToUserPage
+
+        "quickWelcome" : ()=>{
+            // Quickly welcome the current user
+            wikiEditor.info.addWikiTextToUserPage(wikiEditor.info.targetUsername(), "\n{{welcome}}\n", false, "Welcome", "{{welcome}}", "This user has already been welcomed.");
+        },
+
+        // Used for rollback
+        "isLatestRevision" : (name, revID, callback) => { // callback only if successful!! in other cases, will REDIRECT to latest revison compare page
+            // Check if revsion is the latest revision
+            $.getJSON("https://en.wikipedia.org/w/api.php?action=query&prop=revisions&titles="+ name +"&rvslots=*&rvprop=ids&formatversion=2&format=json", r=>{
+                // We got the response
+                let latestRId = r.query.pages[0].revisions[0].revid;
+                let parentRId = r.query.pages[0].revisions[0].parentid;
+                if (latestRId == revID) {
+                    // Yup! Send the callback
+                    callback();
+                } else {
+                    // Nope :(
+                    // Load the preview page of the latest one
+                    window.location.replace("https://en.wikipedia.org/w/index.php?title="+ name +"&diff="+ latestRId +"&oldid="+ parentRId +"&diffmode=source#redirectLatestRevision");
+                }
+            });
+        },
+
+        "latestRevisionNotByUser" : (name, username, callback) => { // CALLBACK revision, summaryText
+            // Name is page name, username is bad username
+            $.getJSON("https://en.wikipedia.org/w/api.php?action=query&prop=revisions&titles="+ name +"&rvslots=*&rvprop=ids%7Cuser%7Ccontent&rvexcludeuser="+ username +"&formatversion=2&format=json", r=>{
+                // We got the response
+                let latestRId = r.query.pages[0].revisions[0].revid;
+                let latestContent = r.query.pages[0].revisions[0].slots.main['*'];
+                console.log(latestContent);
+            });
         }
     },
     "ui" : {
@@ -253,18 +269,51 @@ var wikiEditor = {
                         let summary = _eD[3];
 
                         // MAKE EDIT
-                        wikiEditor.info.addWikiTextToUserPage(user, wikiTxt, true, summary, r=>{
-                            // check if result was good or bad
-                        });
+                        wikiEditor.info.addWikiTextToUserPage(user, wikiTxt, true, summary);
                     });
 
                     // CREATE DIALOG
                     // MDL FULLY SUPPORTED HERE (container). 
                     dialogEngine.create(mdlContainers.generateContainer(`
                     [[[[include warnUserDialog.html]]]]
-                    `, 500, 700)).showModal(); // 500x700 dialog, see warnUserDialog.html for code
+                    `, 500, 630)).showModal(); // 500x630 dialog, see warnUserDialog.html for code
                 }
             });
+        }, // end beginWarn
+
+        "newMsg" : ()=>{
+            // New message dialog
+            // Setup preview handling
+            addMessageHandler("generatePreview`*", m=>{
+                wikiEditor.info.parseWikitext(m.split("`")[1], parsed=>{ // Split to Wikitext and send over to the API to be handled
+                    dialogEngine.dialog.getElementsByTagName("iframe")[0].contentWindow.postMessage({
+                        "action": "parseWikiTxt",
+                        "result": parsed}, '*'); // push to container for handling in dialog and add https:// to stop image breaking
+                });
+            });
+
+            // Add toast handler
+            addMessageHandler("pushToast`*", m=>wikiEditor.visuals.toast.show(m.split('`')[1],false,false,15000));
+
+            // Add submit handler
+
+            addMessageHandler("applyNotice`*", eD=> {
+                // i.e applyNotice`user`wikitext`summary
+                // TODO: maybe b64 encode?
+                let _eD = eD.split("`"); // params
+                let user = _eD[1];
+                let wikiTxt = _eD[2];
+                let summary = _eD[3];
+
+                // MAKE EDIT
+                wikiEditor.info.addWikiTextToUserPage(user, wikiTxt, false, summary); // This requires title.
+            });
+
+            // CREATE DIALOG
+            // MDL FULLY SUPPORTED HERE (container). 
+            dialogEngine.create(mdlContainers.generateContainer(`
+            [[[[include newMsg.html]]]]
+            `, 500, 390)).showModal(); // 500x390 dialog, see newMsg.html for code
         }
     }
 };
@@ -303,6 +352,8 @@ function initwikiEdit() {
                 // TODO: maybe replace with custom page in future? 
                 window.location.href = "/w/index.php?title="+ mw.config.get("wgRelevantPageName") +"&action=edit&undoafter="+ window.location.hash.split("-")[2] +"&undo="+ window.location.hash.split("-")[1];
             }, 7500);
+        } else if (window.location.hash.includes("#redirectLatestRevision")) {
+            wikiEditor.visuals.toast.show("You were automatically redirected to the lastest revision due to an edit conflict.");
         }
     });
 }

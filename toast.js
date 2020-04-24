@@ -37,7 +37,7 @@ wikiEditor.visuals.toast = {
                         toast.MaterialSnackbar.showSnackbar({message: text, actionHandler: btnClick, actionText: buttonTxt, timeout: tOut}); 
                     } else {
                         // Show just message
-                        toast.MaterialSnackbar.showSnackbar({message: text});
+                        toast.MaterialSnackbar.showSnackbar({message: text, timeout: tOut});
                     }
                 };
                 }());
