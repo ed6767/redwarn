@@ -159,7 +159,7 @@ var wikiEditor = {
                 wikiTxtLines.forEach(ln => finalTxt = finalTxt + ln + "\n"); // Remap to lines
                 console.log(finalTxt);
 
-                // Push edit using CSRF token, post as more secure
+                // Push edit using CSRF token
                 $.post("https://en.wikipedia.org/w/api.php", {
                     "action": "edit",
                     "format": "json",
@@ -192,15 +192,16 @@ var wikiEditor = {
         },
 
         // Used for rollback
-        "isLatestRevision" : (name, revID, callback) => { // callback only if successful!! in other cases, will REDIRECT to latest revison compare page
+        "isLatestRevision" : (name, revID, callback) => { // callback(username) only if successful!! in other cases, will REDIRECT to latest revison compare page
             // Check if revsion is the latest revision
-            $.getJSON("https://en.wikipedia.org/w/api.php?action=query&prop=revisions&titles="+ name +"&rvslots=*&rvprop=ids&formatversion=2&format=json", r=>{
+            $.getJSON("https://en.wikipedia.org/w/api.php?action=query&prop=revisions&titles="+ name +"&rvslots=*&rvprop=ids%7Cuser&formatversion=2&format=json", r=>{
                 // We got the response
                 let latestRId = r.query.pages[0].revisions[0].revid;
                 let parentRId = r.query.pages[0].revisions[0].parentid;
+                let latestUsername = r.query.pages[0].revisions[0].user;
                 if (latestRId == revID) {
                     // Yup! Send the callback
-                    callback();
+                    callback(latestUsername);
                 } else {
                     // Nope :(
                     // Load the preview page of the latest one
@@ -209,22 +210,163 @@ var wikiEditor = {
             });
         },
 
-        "latestRevisionNotByUser" : (name, username, callback) => { // CALLBACK revision, summaryText
+        "latestRevisionNotByUser" : (name, username, callback) => { // CALLBACK revision, summaryText, rId
             // Name is page name, username is bad username
             $.getJSON("https://en.wikipedia.org/w/api.php?action=query&prop=revisions&titles="+ name +"&rvslots=*&rvprop=ids%7Cuser%7Ccontent&rvexcludeuser="+ username +"&formatversion=2&format=json", r=>{
                 // We got the response
-                let latestRId = r.query.pages[0].revisions[0].revid;
-                let latestContent = r.query.pages[0].revisions[0].slots.main['*'];
-                console.log(latestContent);
+                let _r;
+                try {
+                    _r = r.query.pages[0].revisions[0]; // get latest revision
+                    if (_r == null) { throw "can't be null"; } // if empty error
+                } catch (error) {
+                    // Probably no other edits. Redirect to history page and show the notice
+                    window.location.replace("https://en.wikipedia.org/w/index.php?title="+ name +"&action=history#rollbackFailNoRev");
+                    return; // exit
+                }
+
+
+
+                console.log("_r");
+                let latestContent = _r.slots.main.content;
+                let summary = "Rollback recent rev. by [[Special:Contributions/"+ username +"|"+ username +"]] ([[User_talk:"+ username +"|talk]]) to rev. "+ _r.revid +" by " +_r.user;
+                callback(latestContent, summary, _r.revid);
             });
+        },
+        
+    },
+
+    "rollback" : { // Rollback features
+        "preview" : () => { // Redirect to the preview of the rollback (compare page)
+            // Check if latest, else redirect
+            wikiEditor.visuals.toast.show("Please wait...");
+            wikiEditor.info.isLatestRevision(mw.config.get("wgRelevantPageName"), mw.util.getParamValue("diff"), un=>{
+                // Fetch latest revision not by user
+                wikiEditor.info.latestRevisionNotByUser(mw.config.get("wgRelevantPageName"), un, (content, summary, rID) => {
+                    // Got it! Now redirect to preview
+                    window.location.replace("https://en.wikipedia.org/w/index.php?title="+ mw.config.get("wgRelevantPageName") +"&diff="+ rID +"&oldid="+ mw.util.getParamValue("diff") +"&diffmode=source#rollbackPreview");
+                });
+            });
+        },
+
+        "apply" : (reason) => {
+            // Apply rollback
+            wikiEditor.visuals.toast.show("Please wait...", false, false, 1000);
+            wikiEditor.info.isLatestRevision(mw.config.get("wgRelevantPageName"), mw.util.getParamValue("diff"), un=>{
+                // Fetch latest revision not by user
+                wikiEditor.info.latestRevisionNotByUser(mw.config.get("wgRelevantPageName"), un, (content, summary, rID) => {
+                    // Got it! Now set page content to summary
+                    // Push edit using CSRF token
+                    $.post("https://en.wikipedia.org/w/api.php", {
+                        "action": "edit",
+                        "format": "json",
+                        "token" : mw.user.tokens.get("csrfToken"),
+                        "title" : mw.config.get("wgRelevantPageName"),
+                        "summary" : summary + ": " + reason + " (RedWarn)", // summary sign here
+                        "text": content,
+                        "tags": "undo" // Tag with undo flag
+                    }).done(dt => {
+                        // We done. Check for errors, then callback appropriately
+                        if (!dt.edit) {
+                            // Error occured or other issue
+                            console.error(dt);
+                            wikiEditor.visuals.toast.show("Sorry, there was an error. Your rollback has not been applied.");
+
+                        } else {
+                            wikiEditor.visuals.toast.show("Rollback complete.");
+                            // Success! Now show warning dialog but w correct info
+                            wikiEditor.info.targetUsername = eval("()=>{return '"+ un +"';}");
+                            wikiEditor.info.getRelatedPage = eval("()=>{return '"+ mw.config.get("wgRelevantPageName") +"';}");
+                            // Show warning dialog
+                            wikiEditor.ui.beginWarn();
+                        }
+                    });
+                });
+            });
+        },
+
+        "promptRollbackReason" : reason=> {
+            wikiEditor.info.isLatestRevision(mw.config.get("wgRelevantPageName"), mw.util.getParamValue("diff"),un=>{ // validate is latest
+                // Show dialog then rollback
+                // Add submit handler
+
+                addMessageHandler("reason`*", rs=>wikiEditor.rollback.apply(rs.split("`")[1])); // When reason recieved, submit rollback
+
+                // CREATE DIALOG
+                // MDL FULLY SUPPORTED HERE (container). 
+                dialogEngine.create(mdlContainers.generateContainer(`
+                [[[[include rollbackReason.html]]]]
+                `, 500, 120)).showModal(); // 500x120 dialog, see rollbackReason.html for code
+            });
+        },
+
+        "welcomeRevUsr" :() => {
+            // Send welcome to user who made most recent revision
+            wikiEditor.visuals.toast.show("Please wait...", false, false, 1000);
+            wikiEditor.info.isLatestRevision(mw.config.get("wgRelevantPageName"), mw.util.getParamValue("diff"), un=>{
+                // We got the username, send the welcome
+                wikiEditor.info.addWikiTextToUserPage(un, "{{welcome}}", false, "Welcome!", "{{welcome}}", "This user has already been welcomed.");
+            });
+        },
+
+
+        "loadIcons" : () => {
+            // Add rollback icons (on left side)
+            $('.diff-ntitle').prepend(`
+            <div id="rollBackVandal" class="icon material-icons"><span style="cursor: pointer; font-size:28px; padding-right:5px; color:red;" onclick="wikiEditor.rollback.apply('vandalism');">delete_forever</span></div>
+            <div class="mdl-tooltip mdl-tooltip--large" for="rollBackVandal">
+                Rollback Vandalism
+            </div>
+
+            <div id="rollBackRM" class="icon material-icons"><span style="cursor: pointer; font-size:28px; padding-right:5px; color:orange;" onclick="wikiEditor.rollback.apply('rm content w no good reason or consensus');">format_indent_increase</span></div>
+            <div class="mdl-tooltip mdl-tooltip--large" for="rollBackRM">
+                Rollback removal of content with no good reason or consensus in talk page
+            </div>
+            
+            <div id="rollBack" class="icon material-icons"><span style="cursor: pointer; font-size:28px; padding-right:5px; color:blue;" onclick="wikiEditor.rollback.promptRollbackReason('');">replay</span></div>
+            <div class="mdl-tooltip mdl-tooltip--large" for="rollBack">
+                Rollback
+            </div>
+            
+            <div id="rollBackAGF" class="icon material-icons"><span style="cursor: pointer; font-size:28px; padding-right:5px; color:green;" onclick="wikiEditor.rollback.promptRollbackReason('revert good faith edits ');">thumb_up</span></div>
+            <div class="mdl-tooltip mdl-tooltip--large" for="rollBackAGF">
+                Assume Good Faith and Rollback
+            </div>
+            
+            <div id="rollBackPrev" class="icon material-icons"><span style="cursor: pointer; font-size:28px; padding-right:5px;" onclick="wikiEditor.rollback.preview();">compare_arrows</span></div>
+            <div class="mdl-tooltip mdl-tooltip--large" for="rollBackPrev">
+                Preview Rollback
+            </div>
+
+            <div id="wlRU" class="icon material-icons"><span style="cursor: pointer; font-size:28px; padding-right:5px;" onclick="wikiEditor.rollback.welcomeRevUsr();">sentiment_satisfied_alt</span></div>
+            <div class="mdl-tooltip mdl-tooltip--large" for="wlRU">
+                Quick Welcome User
+            </div>
+            
+            `);
+
+            // On right side (restore)
+            $('.diff-otitle').prepend(`
+                <div id="restoreOld" class="icon material-icons"><span style="cursor: pointer; font-size:28px; padding-right:5px; color:purple;" onclick="wikiEditor.ui.newMsg();">history</span></div>
+                <div class="mdl-tooltip mdl-tooltip--large" for="restoreOld">
+                    Restore this version
+                </div>
+            `);
+
+            // Now register all icons
+            for (let item of document.getElementsByClassName("mdl-tooltip")) {
+                wikiEditor.visuals.register(item); 
+            } 
+            // That's done :)
         }
     },
+
+
     "ui" : {
         "beginWarn" : (ignoreWarnings)=> {
             // Give user a warning (show dialog)
             if ((wikiEditor.info.targetUsername() == wikiEditor.info.getUsername()) && !ignoreWarnings) {
                 // Usernames are the same, give toast.
-                wikiEditor.visuals.toast.show("You can not warn yourself. To test this tool, use User talk:Sandbox for user warnings.", false, false, 7500);
+                wikiEditor.visuals.toast.show("You can not warn yourself. To test this tool, use a sandbox.", false, false, 7500);
                 return; // DO NOT continue.
             }
 
@@ -353,7 +495,33 @@ function initwikiEdit() {
                 window.location.href = "/w/index.php?title="+ mw.config.get("wgRelevantPageName") +"&action=edit&undoafter="+ window.location.hash.split("-")[2] +"&undo="+ window.location.hash.split("-")[1];
             }, 7500);
         } else if (window.location.hash.includes("#redirectLatestRevision")) {
-            wikiEditor.visuals.toast.show("You were automatically redirected to the lastest revision due to an edit conflict.");
+            wikiEditor.visuals.toast.show("Redirected to the lastest revision.");
+        } else if (window.location.hash.includes("#compLatest")) {
+            // Go to the latest revison
+            wikiEditor.info.isLatestRevision(mw.config.get("wgRelevantPageName"), 0, ()=>{}); // auto filters and redirects for us - 0 is an ID that will never be
+        } else if (window.location.hash.includes("#rollbackPreview")) {
+            // Rollback preview
+            $('.mw-revslider-container').html(`
+            <div style="padding-left:10px;">
+                <h2>This is a rollback preview</h2>
+                <span><strong>If you click restore under these edits,</strong> the user <strong>WILL NOT</strong> be warned.</span><br>
+                <a href="#" onclick="
+                wikiEditor.info.isLatestRevision(mw.config.get('wgRelevantPageName'), 0, ()=>{}); // auto filters and redirects for us - 0 is an ID that will never be
+                ">Click here</a> to return to the latest revision
+            </div>
+
+            <br>
+            `);
+
+            $('.mw-revslider-container').attr("style", "border: 3px solid red;");
+
+        } else if (window.location.hash.includes("#rollbackFailNoRev")) {
+            wikiEditor.visuals.toast.show("Could not rollback as there were no recent revisions by other users. Use the history page to try and manually revert.", false, false, 15000);
+        }
+        
+        if (window.location.href.includes("&diff=") && window.location.href.includes("&oldid=")) {
+            // Diff page
+            wikiEditor.rollback.loadIcons(); // load rollback icons
         }
     });
 }
