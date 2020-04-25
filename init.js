@@ -1,9 +1,26 @@
 // (c) Ed.E
 // REPLACE WIKIEDITOR WITH NAME ONCE DECIDED!
 
+function waitForMDLLoad(cb) { // Used to wait for MDL load
+    if(typeof componentHandler !== "undefined"){
+        cb(); // callback
+    } else {
+        setTimeout(()=>waitForMDLLoad(cb), 250);
+    }
+}
+
 var wikiEditor = {
     "visuals" : {
         "init" : (callback) => {
+            // Welcome message
+            console.log(`
++------------------------------+
+|                              |
+| RedWarn (c) 2020 Ed E        |
+| and contributors             |
+|                              |
++------------------------------+
+            `);
             // Load MDL and everything needed, then callback when all loaded
             $('head').append(`
                 <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
@@ -12,7 +29,8 @@ var wikiEditor = {
                 `+ wikiEditorStyle +`
                 </style>
             `); // Append required libaries to page
-            document.querySelector("#MDLSCRIPT").addEventListener("load", ((cb)=>{setTimeout(cb, 500)})(callback)); // when loaded, wait 1/2 second to give loading time to mdl
+            // wait for load
+            waitForMDLLoad(callback);
         },
 
         "register" : function(c) {
@@ -314,12 +332,17 @@ var wikiEditor = {
             $('.diff-ntitle').prepend(`
             <div id="rollBackVandal" class="icon material-icons"><span style="cursor: pointer; font-size:28px; padding-right:5px; color:red;" onclick="wikiEditor.rollback.apply('vandalism');">delete_forever</span></div>
             <div class="mdl-tooltip mdl-tooltip--large" for="rollBackVandal">
-                Rollback Vandalism
+                Quick rollback vandalism
             </div>
 
             <div id="rollBackRM" class="icon material-icons"><span style="cursor: pointer; font-size:28px; padding-right:5px; color:orange;" onclick="wikiEditor.rollback.apply('rm content w no good reason or consensus');">format_indent_increase</span></div>
             <div class="mdl-tooltip mdl-tooltip--large" for="rollBackRM">
-                Rollback removal of content with no good reason or consensus in talk page
+                Quick rollback removal of content with no good reason or consensus in talk page
+            </div>
+
+            <div id="rollBackNC" class="icon material-icons"><span style="cursor: pointer; font-size:28px; padding-right:5px; color:gold;" onclick="wikiEditor.rollback.apply('non-constructive edit');">work_outline</span></div>
+            <div class="mdl-tooltip mdl-tooltip--large" for="rollBackNC">
+                Quick rollback non-constructive edit
             </div>
             
             <div id="rollBack" class="icon material-icons"><span style="cursor: pointer; font-size:28px; padding-right:5px; color:blue;" onclick="wikiEditor.rollback.promptRollbackReason('');">replay</span></div>
