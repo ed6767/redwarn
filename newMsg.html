@@ -11,7 +11,7 @@
 <h2 style="font-weight: 200;font-size:45px;line-height: 48px;">Compose New Message</h2>
 <form id="newMsgForm">
     <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width:100%">
-        <input class="mdl-textfield__input" type="text" id="trgtUsrVisualBox" value="`+ wikiEditor.info.targetUsername() +`" readonly>
+        <input class="mdl-textfield__input" type="text" id="trgtUsrVisualBox" value="`+ wikiEditor.info.targetUsername(un) +`" readonly>
         <label class="mdl-textfield__label" for="trgtUsrVisualBox">Target</label>
         <div class="mdl-tooltip" for="trgtUsrVisualBox">
             To target a different user, please visit their userpage.
@@ -43,7 +43,7 @@ Your message here. ~~~~
 </form>
 
 <span style="float:right;">
-    <button class="mdl-button mdl-js-button mdl-js-ripple-effect" onclick="window.top.postMessage('closeDialog', '*');">
+    <button class="mdl-button mdl-js-button mdl-js-ripple-effect" onclick="window.parent.postMessage('closeDialog', '*');">
         CANCEL
     </button>
     <button id="submitBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" onclick="sendMessage();">
@@ -59,7 +59,7 @@ Your message here. ~~~~
         }
     };
 
-    function pushToast(text) {window.top.postMessage('pushToast\\\`' + text);} // Push toast to host
+    function pushToast(text) {window.parent.postMessage('pushToast\\\`' + text);} // Push toast to host
 
     function grabPreview() {
         var wikiTxt = document.getElementById("wikiTxt").value;
@@ -67,7 +67,7 @@ Your message here. ~~~~
             // Not signed, warn
             pushToast("Don't forget to sign your message!");
         }
-        window.top.postMessage('generatePreview\\\`'+ wikiTxt, '*');
+        window.parent.postMessage('generatePreview\\\`'+ wikiTxt, '*');
     }
 
     function sendMessage() {
@@ -83,7 +83,7 @@ Your message here. ~~~~
             pushToast("Sign your message with '~~~~'");
             return; // Do not continue
         }
-        window.top.postMessage('applyNotice\\\`' + document.getElementById("trgtUsrVisualBox").value + '\\\`' + wikiTxt + '\\\`' + "New message"); // Push upstairs and commit
-        window.top.postMessage("closeDialog"); // We done here. Top will refresh or reshow if error occurs.
+        window.parent.postMessage('applyNotice\\\`' + document.getElementById("trgtUsrVisualBox").value + '\\\`' + wikiTxt + '\\\`' + "New message"); // Push upstairs and commit
+        window.parent.postMessage("closeDialog"); // We done here. Top will refresh or reshow if error occurs.
     }
 </script>

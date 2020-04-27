@@ -10,7 +10,7 @@
     </div>
 </form>
 <span style="float:right;">
-    <button class="mdl-button mdl-js-button mdl-js-ripple-effect" onclick="window.top.postMessage('closeDialog', '*');">
+    <button class="mdl-button mdl-js-button mdl-js-ripple-effect" onclick="window.parent.postMessage('closeDialog', '*');">
         CANCEL
     </button>
     <button id="submitBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" onclick="pushRollback();">
@@ -31,8 +31,8 @@
             // Too short
         } else {
             // Submit it
-            window.top.postMessage('reason\\\`' + reason); // Push upstairs
-            window.top.postMessage("closeDialog"); // We done here.
+            window.parent.postMessage('reason\\\`' + reason); // Push upstairs
+            window.parent.postMessage("closeDialog"); // We done here.
             return false; // prevent redirect
         }
     }

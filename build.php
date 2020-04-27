@@ -7,7 +7,7 @@
 function buildScript() {
     // For each js file
     $result = "";
-    $jsFiles = ['styles.js', 'init.js', 'dialog.js', 'mdlContainer.js', 'rules.js', 'toast.js']; // List fo files in order to import 
+    $jsFiles = ['styles.js', 'init.js', 'dialog.js', 'mdlContainer.js', 'rules.js', 'toast.js', 'info.js', 'rollback.js', 'ui.js']; // List fo files in order to import 
     foreach($jsFiles as $file) {
         $result .= file_get_contents($file) . "\n"; // get contents and append
     }
