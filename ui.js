@@ -183,6 +183,8 @@ wikiEditor.ui = {
                     ({
                         "contribs" : un=>window.location.replace("https://en.wikipedia.org/wiki/Special:Contributions/"+ un),  // Redirect to contribs page
 
+                        "accInfo" : un=>window.location.replace("https://en.wikipedia.org/wiki/Special:CentralAuth?target="+ un),  // Redirect to Special:CentralAuth page
+
                         "sendMsg" : un=>wikiEditor.ui.newMsg(un), // show new msg dialog
 
                         "quickWel" : un=>wikiEditor.info.quickWelcome(un), // Submit quick welcome
@@ -193,6 +195,7 @@ wikiEditor.ui = {
                 },
                 items: {
                     "contribs": {name: "Contributions"},
+                    "accInfo": {name: "Account Info"},
                     "sendMsg": {name: "Send message"},
                     "quickWel": {name: "Quick Welcome"},
                     "newNotice": {name: "New Notice"},
@@ -279,7 +282,47 @@ wikiEditor.ui = {
                 }
             });
         })); // END REMOVE NOTICE CONTEXT MENU
+        // TODO: add more, like quick welcome options ext.. and right-click on article link to begin rollback ext.
+    }, // end context menus
 
 
+    "requestSpeedyDelete" : (pg)=>{
+        // Open Speedy Deletion dialog for first selection, i.e I'm requesting the speedy deletion of..
+        // Programming this is proving to be very boring.
+        addMessageHandler("csdR`*", rs=>{
+            // Reason recieved.
+            let reason = eval(rs.split("`")[1]);
+            let reasonTitle = reason.title;
+            let additionalInfoReq = reason.input != ""; // if special info needed
+            let additionalInfo = "";
+            if (additionalInfoReq) {
+                if (rs.split("`")[2] == "undefined") {
+                    // No reason specified
+                    additionalInfo = "Not specified.";
+                } else {
+                    additionalInfo = rs.split("`")[2]; // set to the additional info
+                }
+            }
+            console.log(`Deleting under: `+ reasonTitle +`
+            `+ reason.input + additionalInfo + ` (redwarn)
+            `);
+        }); 
+
+        let finalStr = ``;
+        for (const key in speedyDeleteReasons) {
+            speedyDeleteReasons[key].forEach((e,i)=>{
+                let style = "";
+                if ((key + e.title).length > 62) {
+                    // Too long to fit
+                    style="font-size:10px;";
+                }
+                finalStr += `<li class="mdl-menu__item" data-val='speedyDeleteReasons["`+ key + `"][`+ i +`]' onmousedown="refreshLevels('speedyDeleteReasons[\\\'`+ key + `\\\'][`+ i +`]');" style="`+ style +`">`+ key + e.title +`</li>`;;
+            });
+        }
+        // CREATE DIALOG
+        // MDL FULLY SUPPORTED HERE (container). 
+        dialogEngine.create(mdlContainers.generateContainer(`
+        [[[[include speedyDeletionp1.html]]]]
+        `, 500, 450)).showModal(); // 500x300 dialog, see speedyDeletionp1.html for code
     }
 }

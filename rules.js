@@ -1,3 +1,4 @@
+// Data processed from Twinkle Source at https://github.com/azatoth/twinkle
 var rules = [
     {
         "name": "Vandalism",
