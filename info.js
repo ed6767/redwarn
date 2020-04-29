@@ -188,7 +188,7 @@ wikiEditor.info = { // API
                 "format": "json",
                 "token" : mw.user.tokens.get("csrfToken"),
                 "title" : "User_talk:"+ user,
-                "summary" : summary + " (RedWarn)", // summary sign here
+                "summary" : summary + " ([[User:JamesHSmith6789/redwarn|RedWarn]])", // summary sign here
                 "text": finalTxt
             }).done(dt => {
                 // We done. Check for errors, then callback appropriately
