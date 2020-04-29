@@ -258,7 +258,7 @@ wikiEditor.ui = {
                             "format": "json",
                             "token" : mw.user.tokens.get("csrfToken"),
                             "title" : mw.config.get("wgRelevantPageName"),
-                            "summary" : "Void notice made in error (RedWarn)", // summary sign here
+                            "summary" : "Void notice made in error ([[User:JamesHSmith6789/redwarn|RedWarn]])", // summary sign here
                             "text": finalStr
                         }).done(dt => {
                             // We done. Check for errors, then callback appropriately
