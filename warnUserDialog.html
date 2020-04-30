@@ -336,7 +336,7 @@
         if (fromCustomTxt) {
             // Edited using Wikitext editor
             var wikiTxt = document.getElementById("wikiTxt").value;
-            if (!wikiTxt.includes("~~~~")) {
+            if (!wikiTxt.includes("`+ wikiEditor.sign() +`")) {
                 // Not signed, warn
                 pushToast("Don't forget to sign your notice!");
             }
@@ -349,7 +349,7 @@
             }
             // Get preview as usual
             getTemplateName(name=>{
-            var wikiTxt = "{{subst:"+ name +"}} ~~~~";
+            var wikiTxt = "{{subst:"+ name +"}} " + "`+ wikiEditor.sign() +`";
             document.getElementById("wikiTxt").value = wikiTxt; // set edit box
             window.parent.postMessage('generatePreview\\\`'+ wikiTxt, '*');
             }); 
@@ -487,7 +487,7 @@
                 }, {}); // form data
 
             var wikiTxt = document.getElementById("wikiTxt").value;
-            if (!wikiTxt.includes("~~~~")) {
+            if (!wikiTxt.includes("`+ wikiEditor.sign() +`")) {
                 // Not signed, warn
                 pushToast("Sign your notice!");
                 return; // Do not continue

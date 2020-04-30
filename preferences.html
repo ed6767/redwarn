@@ -1,0 +1,192 @@
+<!-- PREFERENCES PAGE -->
+<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+  <header class="mdl-layout__header">
+    <div class="mdl-layout__header-row">
+      <!-- Title -->
+      <span class="mdl-layout-title" style="width: calc(100% - 60px);">RedWarn Preferences</span>
+      <div id="apply" class="icon material-icons" style="float:right;">
+        <span style="cursor: pointer; padding-right:15px;" onclick="saveConfig();">
+            save
+        </span>
+        </div>
+        <div class="mdl-tooltip" for="apply">
+            Apply Changes
+        </div>
+
+        <div id="close" class="icon material-icons" style="float:right;">
+        <span style="cursor: pointer; padding-right:15px;" onclick="window.parent.postMessage('closeDialog');">
+            clear
+        </span>
+        </div>
+        <div class="mdl-tooltip" for="close">
+            Don't apply changes and Close
+        </div>
+    </div>
+    <!-- Tabs -->
+    <div class="mdl-layout__tab-bar mdl-js-ripple-effect">
+      <a href="#scroll-tab-1" class="mdl-layout__tab is-active">Appearance</a>
+      <a href="#scroll-tab-2" class="mdl-layout__tab">Behavior</a>
+      <!--
+      <a href="#scroll-tab-3" class="mdl-layout__tab">Tab 3</a>
+      <a href="#scroll-tab-4" class="mdl-layout__tab">Tab 4</a>
+      <a href="#scroll-tab-5" class="mdl-layout__tab">Tab 5</a>
+      <a href="#scroll-tab-6" class="mdl-layout__tab">Tab 6</a>-->
+    </div>
+  </header>
+  <main class="mdl-layout__content" style="padding-left: 5%;">
+    <form id="config">
+        <section class="mdl-layout__tab-panel is-active" id="scroll-tab-1">
+        <div class="page-content">
+            <!-- APPEARANCE TAB -->
+            <h4>Appearance</h4>
+            <span style="font-size: 18px;padding-bottom: 20px;">UI Colour Scheme:</span><br>
+            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="option-1">
+                <input type="radio" id="option-1" class="mdl-radio__button" name="colTheme" value="blue-indigo" checked>
+                <span class="mdl-radio__label">WikiBlue (default)</span>
+            </label>
+            &nbsp;
+            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="option-2">
+                <input type="radio" id="option-2" class="mdl-radio__button" name="colTheme" value="amber-yellow">
+                <span class="mdl-radio__label">Sunshine</span>
+            </label>
+            &nbsp;
+            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="option-3">
+                <input type="radio" id="option-3" class="mdl-radio__button" name="colTheme" value="purple-deep_purple">
+                <span class="mdl-radio__label">Purple Power</span>
+            </label>
+            &nbsp;
+            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="option-4">
+                <input type="radio" id="option-4" class="mdl-radio__button" name="colTheme" value="blue_grey-red">
+                <span class="mdl-radio__label">Red and Dull</span>
+            </label>
+            &nbsp;
+            <i>Previews coming soon.</i>
+
+            <hr>
+            <h4>Patrol Appearance</h4>
+
+            <!-- SIDEBAR SIZE -->
+            <span style="font-size: 18px;padding-bottom: 20px;cursor:help;" id="ptrsidebarSize">Sidebar size:</span><br>
+            <div class="mdl-tooltip mdl-tooltip--large" for="ptrsidebarSize">
+                The size of the sidebar where recent changes are shown.<br>
+                Use Small is your screen is low resolution, otherwise, changing this option is not recommended.
+            </div>
+            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="ptrSidebarSmall">
+                <input type="radio" id="ptrSidebarSmall" class="mdl-radio__button" name="ptrSidebar" value="250">
+                <span class="mdl-radio__label">Small</span>
+            </label>
+            &nbsp;
+            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="ptrSidebarMed">
+                <input type="radio" id="ptrSidebarMed" class="mdl-radio__button" name="ptrSidebar" value="500" checked>
+                <span class="mdl-radio__label">Medium (default)</span>
+            </label>
+            &nbsp;
+            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="ptrSidebarLg">
+                <input type="radio" id="ptrSidebarLg" class="mdl-radio__button" name="ptrSidebar" value="750">
+                <span class="mdl-radio__label">Large</span>
+            </label><br><br>
+
+            <!-- ADDITION COL -->
+            <span style="font-size: 18px;padding-bottom: 20px;cursor:help;" id="ptraddCol">Colour of additions:</span><br>
+            <div class="mdl-tooltip mdl-tooltip--large" for="ptraddCol">
+                The background colour for changes that increase the size of a page.
+            </div>
+            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="ptraddcolGreen">
+                <input type="radio" id="ptraddcolGreen" class="mdl-radio__button" name="ptrAddCol" value="0,255,0" checked>
+                <span class="mdl-radio__label">Green (default)</span>
+            </label>
+            &nbsp;
+            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="ptraddcolRed">
+                <input type="radio" id="ptraddcolRed" class="mdl-radio__button" name="ptrAddCol" value="255,0,0">
+                <span class="mdl-radio__label">Red</span>
+            </label>
+            &nbsp;
+            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="ptraddcolBlue">
+                <input type="radio" id="ptraddcolBlue" class="mdl-radio__button" name="ptrAddCol" value="0,195,255">
+                <span class="mdl-radio__label">Blue</span>
+            </label>
+            &nbsp;
+            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="ptraddcolYellow">
+                <input type="radio" id="ptraddcolYellow" class="mdl-radio__button" name="ptrAddCol" value="255,255,0">
+                <span class="mdl-radio__label">Yellow</span>
+            </label> <br><br>
+
+            <!-- RM COL -->
+            <span style="font-size: 18px;padding-bottom: 20px;cursor:help;" id="ptrrmCol">Colour of removals:</span><br>
+            <div class="mdl-tooltip mdl-tooltip--large" for="ptrrmCol">
+                The background colour for changes that decrease the size of a page.
+            </div>
+            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="ptrrmcolGreen">
+                <input type="radio" id="ptrrmcolGreen" class="mdl-radio__button" name="ptrRmCol" value="0,255,0">
+                <span class="mdl-radio__label">Green</span>
+            </label>
+            &nbsp;
+            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="ptrrmcolRed">
+                <input type="radio" id="ptrrmcolRed" class="mdl-radio__button" name="ptrRmCol" value="255,0,0" checked>
+                <span class="mdl-radio__label">Red (default)</span>
+            </label>
+            &nbsp;
+            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="ptrrmcolBlue">
+                <input type="radio" id="ptrrmcolBlue" class="mdl-radio__button" name="ptrRmCol" value="0,195,255">
+                <span class="mdl-radio__label">Blue</span>
+            </label>
+            &nbsp;
+            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="ptrrmcolYellow">
+                <input type="radio" id="ptrrmcolYellow" class="mdl-radio__button" name="ptrRmCol" value="255,255,0">
+                <span class="mdl-radio__label">Yellow</span>
+            </label>
+            
+            <!-- END APPEARANCE TAB-->
+        </div>
+        </section>
+        <section class="mdl-layout__tab-panel" id="scroll-tab-2">
+        <div class="page-content">
+            <!-- BEHAVIOR SETTINGS -->
+            <h5>Behavior settings coming soon! Please leave suggestions for options you'd like to see in RedWarn's talk page.</h5>
+            <!-- END BEHAVIOR SETTINGS -->
+        </div>
+        </section>
+        <section class="mdl-layout__tab-panel" id="scroll-tab-3">
+        <div class="page-content"><!-- Your content goes here --></div>
+        </section>
+        <section class="mdl-layout__tab-panel" id="scroll-tab-4">
+        <div class="page-content"><!-- Your content goes here --></div>
+        </section>
+        <section class="mdl-layout__tab-panel" id="scroll-tab-5">
+        <div class="page-content"><!-- Your content goes here --></div>
+        </section>
+        <section class="mdl-layout__tab-panel" id="scroll-tab-6">
+        <div class="page-content"><!-- Your content goes here --></div>
+        </section>
+    </form>
+    <i>To apply your changes, click the save icon in the top right corner.</i>
+  </main>
+</div>
+
+<script>
+    var config = `+ JSON.stringify(wikiEditor.config) +`;
+    function saveConfig() {
+        var data = $('form').serializeArray().reduce(function(obj, item) {
+                obj[item.name] = item.value;
+                return obj;
+                }, {}); // form data
+        window.parent.postMessage("config\\\`"+ btoa(JSON.stringify(data))); // send to the big boss
+    }
+
+    function loadFromConfig() {
+        $.each(config, function(key, value) {  
+            var ctrl = $('[name='+key+']');  
+                switch(ctrl.prop("type")) { 
+                    case "radio": case "checkbox":   
+                        ctrl.each(function() {
+                            if($(this).attr('value') == value) $(this).attr("checked",value);
+                        });   
+                        break;  
+                    default:
+                        ctrl.val(value); 
+                }  
+        });  
+    }
+
+    loadFromConfig();
+</script>

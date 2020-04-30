@@ -42,8 +42,8 @@ wikiEditor.info = { // API
         });
     },
 
-    "writeConfig": (callback)=> {
-        // Write config to the users page
+    "writeConfig": ()=> {
+        // Write config to the users page and refresh
         let finalTxt = `
 /*<nowiki>
 +-----------------------------------------+
@@ -75,7 +75,8 @@ wikiEditor.config = `+ JSON.stringify(wikiEditor.config) +"; //</nowiki>"; // ge
                     wikiEditor.visuals.toast.show("Sorry, there was an error. See the console for more info. Your changes have not been saved.");
                 } else {
                     // Success!
-                    callback(); // we done
+                    window.location.hash = "#configChange";
+                    window.location.reload(); // we done
                 }
             });
     },
@@ -84,7 +85,7 @@ wikiEditor.config = `+ JSON.stringify(wikiEditor.config) +"; //</nowiki>"; // ge
         // Restrict feature to users in this group
         mw.user.getGroups(g=>{
             let hasPerm = g.includes(l);
-            if (l == "confirmed" && !hasPerm) {hasPerm = g.includes("autoconfirmed");} // Due to 2 types of confirmed user, confirmed and autoconfirmed, we have to check both
+            if ((l == "confirmed") && !hasPerm) {hasPerm = g.includes("autoconfirmed");} // Due to 2 types of confirmed user, confirmed and autoconfirmed, we have to check both
             if (hasPerm) {
                 // Has the permission needed
                 if (callback) {
@@ -290,7 +291,7 @@ wikiEditor.config = `+ JSON.stringify(wikiEditor.config) +"; //</nowiki>"; // ge
 
     "quickWelcome" : un=>{
         // Quickly welcome the current user
-        wikiEditor.info.addWikiTextToUserPage(wikiEditor.info.targetUsername(un), "\n{{welcome}}\n", false, "Welcome", "{{welcome}}", "This user has already been welcomed.");
+        wikiEditor.info.addWikiTextToUserPage(wikiEditor.info.targetUsername(un), "\n"+ wikiEditor.welcome() +"\n", false);
     },
 
     // Used for rollback

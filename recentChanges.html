@@ -11,7 +11,7 @@
     <body>
     <!-- No header, and the drawer stays open on larger screens (fixed drawer). -->
         <div class="mdl-layout mdl-js-layout mdl-layout--fixed-drawer">
-            <div class="mdl-layout__drawer" style="width:500px">
+            <div class="mdl-layout__drawer" style="width:`+ sidebarSize +`px">
             <span class="mdl-layout-title">RedWarn Recent Changes Patrol</span>
             <nav class="mdl-navigation">
                 <a class="mdl-navigation__link" href="https://en.wikipedia.org/wiki/Special:RecentChanges">Return to Wikipedia / Change filter options</a>
@@ -23,7 +23,7 @@
             </div>
             <main class="mdl-layout__content">
             <div class="page-content" style="height:100%">
-                <iframe src="https://en.wikipedia.org" style="height:100%; width: calc(100% - 250px);padding-left: 250;"></iframe>
+                <iframe src="https://en.wikipedia.org" style="height:100%; width: calc(100% - `+ (sidebarSize - 250) +`px);padding-left: `+ (sidebarSize - 250) +`;"></iframe>
             </div>
             </main>
         </div>
@@ -62,7 +62,7 @@ function refreshLive() {
                     }
                     
                 }
-                let style = (sizeDiff < 0) ? "background-color: rgba(255,0,0,"+ opacityLevel +"); color:black;" : "background-color: rgba(0,255,0,"+ opacityLevel +"); color:black;" // First neg style, next add style
+                let style = (sizeDiff < 0) ? "background-color: rgba(`+ rmCol +`,"+ opacityLevel +"); color:black;" : "background-color: rgba(`+ addCol +`,"+ opacityLevel +"); color:black;" // First neg style, next add style
                 $("#recentChangesContainer").prepend('<a class="mdl-navigation__link notif" href="#" onclick="goToLatestDiffPage(\\\''+ edit.title +'\\\')" style="display:none;'+ style +'" id="recentChange-'+ edit.revID +'"><i>'+ edit.title +'</i><br><b>'+ edit.user +'</b> ('+ sizeDiff +')<br /><span>'+ edit.comment +'</span><br>'+ edit.tags +'</a>');
                 $("#recentChange-"+ edit.revID).fadeIn(); // fancy
             }

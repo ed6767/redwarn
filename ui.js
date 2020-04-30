@@ -241,7 +241,7 @@ wikiEditor.ui = {
                             if (compStr.toLowerCase().includes(textToMatch.toLowerCase().trim())) {
                                 // Match! Don't add this one normally. Add our sig and that it is now void. MUST REMOVE PIC (as the textTomatch did) in order to stop Redwarn showing as warning still
                                 hasBeenMatched = true;
-                                finalStr += "{{strikethrough|" + textToMatch + "}}<br>'''The above notice was placed in error and is now void.''' ~~~~ \n";
+                                finalStr += "{{strikethrough|" + textToMatch + "}}<br>'''The above notice was placed in error and is now void.''' " + wikiEditor.sign() + " \n";
                             } else {
                                 finalStr += element + "\n";
                             }
@@ -281,7 +281,7 @@ wikiEditor.ui = {
                     "rm": {name: "Void this notice"}
                 }
             });
-        })); // END REMOVE NOTICE CONTEXT MENU
+        }), false); // END REMOVE NOTICE CONTEXT MENU
 
         // NON-CONTRUCTIVE QUICKROLLBACK BUTTON CONTEXT MENU
         $(()=>{
@@ -346,5 +346,26 @@ wikiEditor.ui = {
         dialogEngine.create(mdlContainers.generateContainer(`
         [[[[include speedyDeletionp1.html]]]]
         `, 500, 450)).showModal(); // 500x300 dialog, see speedyDeletionp1.html for code
+    },
+
+    "openPreferences" : () => { // Open Preferences page
+        addMessageHandler("config`*", rs=>{
+            // New config recieved
+            let config = JSON.parse(atob(rs.split("`")[1])); // b64 encoded json string
+            //Write to our config
+            for (const key in config) {
+                if (config.hasOwnProperty(key)) {
+                    const element = config[key];
+                    wikiEditor.config[key] = element; // add or change value
+                }
+            }
+
+            // Push change
+            wikiEditor.info.writeConfig();
+        }); 
+        // Open preferences page with no padding, full screen
+        dialogEngine.create(mdlContainers.generateContainer(`
+        [[[[include preferences.html]]]]
+        `, document.body.offsetWidth, document.body.offsetHeight), true).showModal();
     }
 }

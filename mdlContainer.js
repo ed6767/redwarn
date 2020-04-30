@@ -4,13 +4,23 @@
 NOTICE: All cross-domain addresses in containers MUST BE ABSOLUTE (i.e https:// rather than //)
 */
 var mdlContainers = {
-    "generateHtml" : function(innerContent) {
-        return `
+    "generateHtml" : innerContent => {
+        let content = `
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
         <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-        <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
-        <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.blue-indigo.min.css" />
+        <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>`;
+
+        // Themes
+        let theme = "";
+        if (wikiEditor.config.colTheme){
+            theme = wikiEditor.config.colTheme;
+        } else {
+            theme = "blue-indigo"; // default theme
+        }
+        
+        content += `
+        <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.`+ theme +`.min.css" />
         <!-- Material dropdown - MIT License, Copyright (c) 2016 CreativeIT https://github.com/CreativeIT/getmdl-select/blob/master/LICENSE.txt -->
         <style>
         .getmdl-select{outline:none}.getmdl-select .mdl-textfield__input{cursor:pointer}.getmdl-select .selected{background-color:#ddd}.getmdl-select .mdl-icon-toggle__label{float:right;margin-top:-30px;color:rgba(0,0,0,0.4);transform:rotate(0);transition:transform 0.3s}.getmdl-select.is-focused .mdl-icon-toggle__label{color:#3f51b5;transform:rotate(180deg)}.getmdl-select .mdl-menu__container{width:100% !important;margin-top:2px}.getmdl-select .mdl-menu__container .mdl-menu{width:100%}.getmdl-select .mdl-menu__container .mdl-menu .mdl-menu__item{font-size:16px}.getmdl-select__fix-height .mdl-menu__container .mdl-menu{overflow-y:auto;max-height:288px !important}.getmdl-select__fix-height .mdl-menu.mdl-menu--top-left{bottom:auto;top:0}
@@ -23,6 +33,7 @@ var mdlContainers = {
         `+innerContent+`
         </body>
         `;
+        return content; // return
     },
 
     "generateContainer" : function(innerContent, width, height) {

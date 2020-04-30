@@ -17,7 +17,9 @@ function redirect(url, inNewTab) {
 }
 
 var wikiEditor = {
-    "version" : "rev4", // don't forget to change each version!
+    "version" : "rev5", // don't forget to change each version!
+    "sign": ()=>{return atob("fn5+fg==")}, // we have to do this because mediawiki will swap this out with devs sig.
+    "welcome": ()=> {return atob("e3tzdWJzdDpXZWxjb21lfX0=");},
     "visuals" : {
         "init" : (callback) => {
             // Welcome message
@@ -91,6 +93,13 @@ var wikiEditor = {
     "recentChanges" : {
         "openPage" : (filters)=> {
             // Open recent changes url
+            let sidebarSize = 500;
+            let addCol = "0,255,0"; // rbg
+            let rmCol = "255,0,0"; // rgb
+            if (wikiEditor.config.ptrSidebar) sidebarSize = wikiEditor.config.ptrSidebar; // If preferences set, apply them
+            if (wikiEditor.config.ptrAddCol) addCol = wikiEditor.config.ptrAddCol;
+            if (wikiEditor.config.ptrRmCol) rmCol = wikiEditor.config.ptrRmCol;
+            
             let url = URL.createObjectURL(new Blob([mdlContainers.generateHtml(`
             [[[[include recentChanges.html]]]]
             `)], { type: 'text/html' })); // blob url
@@ -190,6 +199,8 @@ function initwikiEdit() {
             }, 7500);
         } else if (window.location.hash.includes("#redirectLatestRevision")) {
             wikiEditor.visuals.toast.show("Redirected to the lastest revision.");
+        } else if (window.location.hash.includes("#configChange")) {
+            wikiEditor.visuals.toast.show("Preferences saved.");
         } else if (window.location.hash.includes("#compLatest")) {
             // Go to the latest revison
             wikiEditor.info.isLatestRevision(mw.config.get("wgRelevantPageName"), 0, ()=>{}); // auto filters and redirects for us - 0 is an ID that will never be

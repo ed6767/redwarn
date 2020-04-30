@@ -89,7 +89,7 @@ wikiEditor.rollback = { // Rollback features
         wikiEditor.visuals.toast.show("Please wait...", false, false, 1000);
         wikiEditor.info.isLatestRevision(mw.config.get("wgRelevantPageName"), mw.util.getParamValue("diff"), un=>{
             // We got the username, send the welcome
-            wikiEditor.info.addWikiTextToUserPage(un, "{{welcome}}", false, "Welcome!", "{{welcome}}", "This user has already been welcomed.");
+            wikiEditor.info.quickWelcome(un);
         });
     },
 
