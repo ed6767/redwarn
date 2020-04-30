@@ -16,7 +16,9 @@ function buildScript() {
     foreach($files as $file) {
         $result = str_replace("[[[[include ". end(explode("/", $file)). "]]]]", file_get_contents($file), $result); // replace include statements
     }
-    return $result . '
+    return '
+// <nowiki>
+'. $result . '
     $( document ).ready( function () {
         // Init when page loaded
       try {
@@ -26,6 +28,7 @@ function buildScript() {
         console.error(err);
       }
     } );
+// </nowiki>
     ';
 }
 

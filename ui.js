@@ -181,9 +181,9 @@ wikiEditor.ui = {
                     
                     // Do the action for each action now.
                     ({
-                        "contribs" : un=>window.location.replace("https://en.wikipedia.org/wiki/Special:Contributions/"+ un),  // Redirect to contribs page
+                        "contribs" : un=>redirect("https://en.wikipedia.org/wiki/Special:Contributions/"+ un, true),  // Redirect to contribs page in new tab
 
-                        "accInfo" : un=>window.location.replace("https://en.wikipedia.org/wiki/Special:CentralAuth?target="+ un),  // Redirect to Special:CentralAuth page
+                        "accInfo" : un=>redirect("https://en.wikipedia.org/wiki/Special:CentralAuth?target="+ un, true),  // Redirect to Special:CentralAuth page in new tab
 
                         "sendMsg" : un=>wikiEditor.ui.newMsg(un), // show new msg dialog
 
@@ -258,7 +258,7 @@ wikiEditor.ui = {
                             "format": "json",
                             "token" : mw.user.tokens.get("csrfToken"),
                             "title" : mw.config.get("wgRelevantPageName"),
-                            "summary" : "Void notice made in error ([[User:JamesHSmith6789/redwarn|RedWarn]])", // summary sign here
+                            "summary" : "Void notice made in error [[WP:REDWARN|(RedWarn)]]", // summary sign here
                             "text": finalStr
                         }).done(dt => {
                             // We done. Check for errors, then callback appropriately
@@ -282,7 +282,29 @@ wikiEditor.ui = {
                 }
             });
         })); // END REMOVE NOTICE CONTEXT MENU
+
+        // NON-CONTRUCTIVE QUICKROLLBACK BUTTON CONTEXT MENU
+        $(()=>{
+            $.contextMenu({
+                selector: '#rollBackNC', // Select non-constructive edit button
+                callback: (act, info)=>{
+                    // CALLBACK
+                    // Do the action for each action now.
+
+                    ({
+                        "rbTestEdits" : ()=>wikiEditor.rollback.apply('test edit.')  // Submit quick rollback
+                    })[act]();
+                    
+                },
+                items: {
+                    "rbTestEdits": {name: "Quick Rollback Test Edit"}
+                }
+            });
+        }); // NON-CONTRUCTIVE QUICKROLLBACK BUTTON CONTEXT MENU
+
         // TODO: add more, like quick welcome options ext.. and right-click on article link to begin rollback ext.
+
+
     }, // end context menus
 
 

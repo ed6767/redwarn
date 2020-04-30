@@ -471,7 +471,7 @@
         if ($("#specialInfo:visible").length > 0) {
             callback(currentTemplate + currentLevel + "|" + data.specialInfo); // callback w data for special
         } else {
-            callback(currentTemplate + currentLevel + "|" + data.relatedPage + "|" + data.extraInfo); // callback
+            callback(currentTemplate + currentLevel + "|" + data.relatedPage + "|" + "'' "+ data.extraInfo +"''"); // callback, extra info italics
         }
         
         

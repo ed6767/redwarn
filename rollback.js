@@ -45,7 +45,7 @@ wikiEditor.rollback = { // Rollback features
                     "format": "json",
                     "token" : mw.user.tokens.get("csrfToken"),
                     "title" : mw.config.get("wgRelevantPageName"),
-                    "summary" : summary + ": " + reason + " (RedWarn)", // summary sign here
+                    "summary" : summary + ": " + reason + " [[WP:REDWARN|(RedWarn)]]", // summary sign here
                     "text": content,
                     "tags": "undo" // Tag with undo flag
                 }).done(dt => {
@@ -104,7 +104,7 @@ wikiEditor.rollback = { // Rollback features
 
         <div id="rollBackRM" class="icon material-icons"><span style="cursor: pointer; font-size:28px; padding-right:5px; color:orange;" onclick="wikiEditor.rollback.apply('rm content w no good reason or consensus');">format_indent_increase</span></div>
         <div class="mdl-tooltip mdl-tooltip--large" for="rollBackRM">
-            Quick rollback removal of content with no good reason or consensus in talk page
+            Quick rollback removal of content with no good reason or consensus
         </div>
 
         <div id="rollBackNC" class="icon material-icons"><span style="cursor: pointer; font-size:28px; padding-right:5px; color:gold;" onclick="wikiEditor.rollback.apply('non-constructive edit');">work_outline</span></div>

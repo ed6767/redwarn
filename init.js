@@ -8,7 +8,16 @@ function waitForMDLLoad(cb) { // Used to wait for MDL load
     }
 }
 
+function redirect(url, inNewTab) {
+    if (inNewTab) {
+        Object.assign(document.createElement('a'), { target: '_blank', href: url}).click(); // Open in new tab
+    } else {
+        window.location.href = url; // open here
+    }
+}
+
 var wikiEditor = {
+    "version" : "rev4", // don't forget to change each version!
     "visuals" : {
         "init" : (callback) => {
             // Welcome message
@@ -26,6 +35,7 @@ var wikiEditor = {
                 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.contextMenu.min.js"></script>
                 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.ui.position.js"></script>
                 <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/dialog-polyfill/0.4.2/dialog-polyfill.min.js"></script> <!-- firefox being dumb -->
                 <script src="https://code.getmdl.io/1.3.0/material.min.js" id="MDLSCRIPT"></script>
                 <style>
                 /* Context menus */
@@ -79,15 +89,25 @@ var wikiEditor = {
     },
 
     "recentChanges" : {
+        "openPage" : (filters)=> {
+            // Open recent changes url
+            let url = URL.createObjectURL(new Blob([mdlContainers.generateHtml(`
+            [[[[include recentChanges.html]]]]
+            `)], { type: 'text/html' })); // blob url
+            redirect(url, false);
+        },
         "diffLinkAddRedWarn" : () => { // add redwarn to recent changes page
             $('body').unbind('DOMSubtreeModified'); // Prevent infinite loop
             $.each($(".mw-changeslist-diff"), (i,el)=>{
-                if ($(el).parent().html().includes("a href='#redwarn'")) {
-                    // Link already there
+                if ($(el).parent().html().includes("#redwarn")) {
+                    // Link already there.
                 } else {
                     $(el).parent().prepend(`<a href='#redwarn' onclick='wikiEditor.ui.revisionBrowser("`+ el.href +`");'>Redwarn</a>  | `);
                 }
             });
+            window.addEventListener("focus", e=>{ 
+                wikiEditor.recentChanges.bindRecentChanges(); // fix chrome unfocus bug 
+            }, false);
             wikiEditor.recentChanges.bindRecentChanges();
         },
 
@@ -146,6 +166,19 @@ function initwikiEdit() {
 
         // We have perms, let's continue.
 
+        // Load config and check if updated
+        wikiEditor.info.getConfig(()=> {
+            if (wikiEditor.config.lastVersion != wikiEditor.version) {
+                // We've had an update
+                wikiEditor.config.lastVersion = wikiEditor.version; // update entry 
+                wikiEditor.info.writeConfig(()=> { // update the config file
+                    // Push an update toast
+                    wikiEditor.visuals.toast.show("RedWiki has been updated!", "MORE",
+                    ()=>redirect("https://en.wikipedia.org/wiki/User:JamesHSmith6789/redwarn/bugsquasher", true), 7500);
+                });
+            }
+        });
+
         // Check if a message is in URL (i.e edit complete ext)
         if(window.location.hash.includes("#noticeApplied-")) {
             // Show toast w undo edit capabilities
@@ -203,6 +236,17 @@ function initwikiEdit() {
             wikiEditor.rollback.loadIcons(); // load rollback icons
         } else if (window.location.href.includes("/wiki/Special:RecentChanges")) {
             // Recent changes page
+            // Add redwarn btn
+            $(".mw-rcfilters-ui-filterWrapperWidget-bottom").prepend(`
+            <div id="openRWP" class="icon material-icons"><span style="cursor: pointer;" onclick="wikiEditor.recentChanges.openPage(window.location.search.substr(1));">how_to_reg</span></div>
+            <div class="mdl-tooltip mdl-tooltip--large" for="openRWP">
+                Launch RedWarn Patrol with these filters
+            </div>
+            `); // Register tooltip
+            for (let item of document.getElementsByClassName("mdl-tooltip")) {
+                wikiEditor.visuals.register(item); 
+            }
+
             wikiEditor.recentChanges.diffLinkAddRedWarn(); // Add redwarn to all links
         }
     });

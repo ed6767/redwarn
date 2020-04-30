@@ -13,7 +13,14 @@ var dialogEngine = {
             `+ content +`
         </dialog>
         `);
+
         dialogEngine.dialog = document.querySelector('dialog');
+
+        // Firefox issue fix
+        if (! dialogEngine.dialog.showModal) {
+            dialogPolyfill.registerDialog(dialogEngine.dialog);
+        }
+        
         return dialogEngine.dialog;
     }
 }
