@@ -53,7 +53,7 @@ wikiEditor.rollback = { // Rollback features
                     if (!dt.edit) {
                         // Error occured or other issue
                         console.error(dt);
-                        wikiEditor.visuals.toast.show("Sorry, there was an error. Your rollback has not been applied.");
+                        wikiEditor.visuals.toast.show("Sorry, there was an error, likely an edit conflict. Your rollback has not been applied.");
 
                     } else {
                         
@@ -66,6 +66,36 @@ wikiEditor.rollback = { // Rollback features
                     }
                 });
             });
+        });
+    },
+
+    "restore" : (revID, reason) => {
+        // Restore revision by ID
+        wikiEditor.visuals.toast.show("Restoring...", false, false, 4000);
+        // Ask API for this revision
+        $.getJSON("https://en.wikipedia.org/w/api.php?action=query&prop=revisions&rvprop=user|content&rvstartid="+ revID +"&rvendid="+ revID +"&titles="+ encodeURI(mw.config.get("wgRelevantPageName")) +"&formatversion=2&rvslots=*&format=json", r=>{
+            let revUsr = r.query.pages[0].revisions[0].user; // get user
+            let content = r.query.pages[0].revisions[0].slots.main.content; // get content
+            let summary = "Restoring revision "+ revID + " by " + revUsr; // gen our summary
+            // Now we've got that, we just need to submit.
+            $.post("https://en.wikipedia.org/w/api.php", {
+                    "action": "edit",
+                    "format": "json",
+                    "token" : mw.user.tokens.get("csrfToken"),
+                    "title" : mw.config.get("wgRelevantPageName"),
+                    "summary" : summary + ": " + reason + " [[WP:REDWARN|(RedWarn)]]", // summary sign here
+                    "text": content,
+                    "tags": "undo" // Tag with undo flag
+                }).done(dt => {
+                    // Request done. Check for errors, then go to the latest revision
+                    if (!dt.edit) {
+                        // Error occured or other issue
+                        console.error(dt);
+                        wikiEditor.visuals.toast.show("Sorry, there was an error, likely an edit conflict. This edit has not been restored.");
+                    } else {
+                        wikiEditor.info.isLatestRevision(mw.config.get('wgRelevantPageName'), 0, ()=>{}); // we done, go to the latest revision
+                    }
+                });
         });
     },
 
@@ -84,6 +114,20 @@ wikiEditor.rollback = { // Rollback features
         });
     },
 
+    "promptRestoreReason" : revID=> {
+        // Prompt for reason to restore. very sim to rollback reason
+        let reason = ""; // Needed for rollback reason page
+
+        // Add submit handler
+        addMessageHandler("reason`*", rs=>wikiEditor.rollback.restore(revID, rs.split("`")[1])); // When reason recieved, submit rollback
+
+        // CREATE DIALOG
+        // MDL FULLY SUPPORTED HERE (container). 
+        dialogEngine.create(mdlContainers.generateContainer(`
+        [[[[include rollbackReason.html]]]]
+        `, 500, 120)).showModal(); // 500x120 dialog, see rollbackReason.html for code
+    },
+
     "welcomeRevUsr" :() => {
         // Send welcome to user who made most recent revision
         wikiEditor.visuals.toast.show("Please wait...", false, false, 1000);
@@ -95,8 +139,9 @@ wikiEditor.rollback = { // Rollback features
 
 
     "loadIcons" : () => {
-        // Add rollback icons (on left side)
-        $('.diff-ntitle').prepend(`
+        // Add icons to page
+        // Icons for current revision
+        let currentRevIcons = `
         <div id="rollBackVandal" class="icon material-icons"><span style="cursor: pointer; font-size:28px; padding-right:5px; color:red;" onclick="wikiEditor.rollback.apply('vandalism');">delete_forever</span></div>
         <div class="mdl-tooltip mdl-tooltip--large" for="rollBackVandal">
             Quick rollback vandalism
@@ -131,18 +176,38 @@ wikiEditor.rollback = { // Rollback features
         <div class="mdl-tooltip mdl-tooltip--large" for="wlRU">
             Quick Welcome User
         </div>
-        
-        `);
+        `;
 
-        // On right side (restore)
+        // RESTORE THIS VERSION ICONS. DO NOT FORGET TO CHANGE BOTH FOR LEFT AND RIGHT
+
+        let isLatest = $("#mw-diff-ntitle1").text().includes("Latest revision"); // is this the latest revision diff page?
+        // On left side (always restore)
+        // DO NOT FORGET TO CHANGE BOTH!!
         $('.diff-otitle').prepend(`
-            <div id="restoreOld" class="icon material-icons"><span style="cursor: pointer; font-size:28px; padding-right:5px; color:purple;" onclick="wikiEditor.ui.newMsg();">history</span></div>
-            <div class="mdl-tooltip mdl-tooltip--large" for="restoreOld">
-                Restore this version
-            </div>
-        `);
+        <div id="rOld1" class="icon material-icons"><span style="cursor: pointer; font-size:28px; padding-right:5px; color:purple;"
+            onclick="wikiEditor.rollback.promptRestoreReason($('#mw-diff-otitle1 > strong > a').attr('href').split('&')[1].split('=')[1]);"> <!-- the revID on left -->
+                history
+            </span>
+        </div>
+        <div class="mdl-tooltip mdl-tooltip--large" for="rOld1">
+            Restore this version
+        </div>
+        `
+        ); 
 
-        // Now register all icons
+        // On the right side
+        $('.diff-ntitle').prepend(isLatest ? currentRevIcons : `
+        <div id="rOld2" class="icon material-icons"><span style="cursor: pointer; font-size:28px; padding-right:5px; color:purple;"
+            onclick="wikiEditor.rollback.promptRestoreReason($('#mw-diff-ntitle1 > strong > a').attr('href').split('&')[1].split('=')[1]);"> <!-- the revID on right -->
+                history
+            </span>
+        </div>
+        <div class="mdl-tooltip mdl-tooltip--large" for="rOld2">
+            Restore this version
+        </div>
+        `); // if the latest rev, show the accurate revs, else, don't 
+
+        // Now register all tooltips
         for (let item of document.getElementsByClassName("mdl-tooltip")) {
             wikiEditor.visuals.register(item); 
         } 

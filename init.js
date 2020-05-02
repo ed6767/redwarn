@@ -17,7 +17,7 @@ function redirect(url, inNewTab) {
 }
 
 var wikiEditor = {
-    "version" : "rev5", // don't forget to change each version!
+    "version" : "rev6final", // don't forget to change each version!
     "sign": ()=>{return atob("fn5+fg==")}, // we have to do this because mediawiki will swap this out with devs sig.
     "welcome": ()=> {return atob("e3tzdWJzdDpXZWxjb21lfX0=");},
     "visuals" : {
@@ -180,10 +180,10 @@ function initwikiEdit() {
             if (wikiEditor.config.lastVersion != wikiEditor.version) {
                 // We've had an update
                 wikiEditor.config.lastVersion = wikiEditor.version; // update entry 
-                wikiEditor.info.writeConfig(()=> { // update the config file
+                wikiEditor.info.writeConfig(true, ()=> { // update the config file
                     // Push an update toast
                     wikiEditor.visuals.toast.show("RedWiki has been updated!", "MORE",
-                    ()=>redirect("https://en.wikipedia.org/wiki/User:JamesHSmith6789/redwarn/bugsquasher", true), 7500);
+                    ()=>redirect("https://en.wikipedia.org/wiki/User:Ed6767/redwarn/bugsquasher", true), 7500);
                 });
             }
         });

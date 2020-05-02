@@ -9,8 +9,10 @@ var mdlContainers = {
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
         <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-        <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>`;
-
+        <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dialog-polyfill/0.4.2/dialog-polyfill.min.js"></script> <!-- firefox being dumb -->
+        `;
+        
         // Themes
         let theme = "";
         if (wikiEditor.config.colTheme){

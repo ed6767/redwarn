@@ -181,6 +181,10 @@ wikiEditor.ui = {
                     
                     // Do the action for each action now.
                     ({
+                        "usrPg" : un=>redirect("https://en.wikipedia.org/wiki/User:"+ un, true),  // Open user page in new tab
+
+                        "tlkPg" : un=>redirect("https://en.wikipedia.org/wiki/User_talk:"+ un, true),  // Open talk page in new tab
+
                         "contribs" : un=>redirect("https://en.wikipedia.org/wiki/Special:Contributions/"+ un, true),  // Redirect to contribs page in new tab
 
                         "accInfo" : un=>redirect("https://en.wikipedia.org/wiki/Special:CentralAuth?target="+ un, true),  // Redirect to Special:CentralAuth page in new tab
@@ -194,11 +198,13 @@ wikiEditor.ui = {
                     
                 },
                 items: {
+                    "usrPg": {name: "User Page"},
+                    "tlkPg": {name: "Talk Page"},
+                    "sendMsg": {name: "Send message"},
+                    "newNotice": {name: "New Notice"},
+                    "quickWel": {name: "Quick Welcome"},
                     "contribs": {name: "Contributions"},
                     "accInfo": {name: "Account Info"},
-                    "sendMsg": {name: "Send message"},
-                    "quickWel": {name: "Quick Welcome"},
-                    "newNotice": {name: "New Notice"},
                     "adminReport": {name: "Report to Admin"}
                 }
             });
@@ -281,7 +287,7 @@ wikiEditor.ui = {
                     "rm": {name: "Void this notice"}
                 }
             });
-        }), false); // END REMOVE NOTICE CONTEXT MENU
+        }), ()=>{}); // END REMOVE NOTICE CONTEXT MENU
 
         // NON-CONTRUCTIVE QUICKROLLBACK BUTTON CONTEXT MENU
         $(()=>{

@@ -8,7 +8,7 @@
         <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
         <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.blue-indigo.min.css" />
     </head>
-    <body>
+    <body onload="refreshLive();"> <!-- Show a few edits on load -->
     <!-- No header, and the drawer stays open on larger screens (fixed drawer). -->
         <div class="mdl-layout mdl-js-layout mdl-layout--fixed-drawer">
             <div class="mdl-layout__drawer" style="width:`+ sidebarSize +`px">
@@ -23,7 +23,21 @@
             </div>
             <main class="mdl-layout__content">
             <div class="page-content" style="height:100%">
-                <iframe src="https://en.wikipedia.org" style="height:100%; width: calc(100% - `+ (sidebarSize - 250) +`px);padding-left: `+ (sidebarSize - 250) +`;"></iframe>
+
+                <div id="welcomeContainer" style="padding-left: `+ (sidebarSize - 220) +`;padding-top: calc(5% - 60px);padding-right:5%;">
+                    <h2>Welcome to RedWarn Patrol!</h2>
+                    <p>
+                        To the left, you can see a list of recent changes. To view the latest revision of the article that was changed, simply click it on the left.<br>
+                        The stronger the colour, the more the amount of content that has been changed. By default, red means a change that made the page smaller, and green as an edit that made the page bigger. You can change these colours in your preferences.<br>
+                        For full instructions, refer to the user guide.
+                    </p>
+                </div>
+
+                <div id="loadingContainer" style="display: none;padding-left: `+ (sidebarSize - 240) +`;text-align: center;padding-top: calc(10% - 60px);">
+                    <div class="mdl-spinner mdl-js-spinner is-active"></div>
+                </div>
+
+                <iframe src="about:blank" style="display: none; height:100%; width: calc(100% - `+ (sidebarSize - 250) +`px);padding-left: `+ (sidebarSize - 250) +`;"></iframe>
             </div>
             </main>
         </div>
@@ -63,7 +77,9 @@ function refreshLive() {
                     
                 }
                 let style = (sizeDiff < 0) ? "background-color: rgba(`+ rmCol +`,"+ opacityLevel +"); color:black;" : "background-color: rgba(`+ addCol +`,"+ opacityLevel +"); color:black;" // First neg style, next add style
-                $("#recentChangesContainer").prepend('<a class="mdl-navigation__link notif" href="#" onclick="goToLatestDiffPage(\\\''+ edit.title +'\\\')" style="display:none;'+ style +'" id="recentChange-'+ edit.revID +'"><i>'+ edit.title +'</i><br><b>'+ edit.user +'</b> ('+ sizeDiff +')<br /><span>'+ edit.comment +'</span><br>'+ edit.tags +'</a>');
+                $("#recentChangesContainer").prepend('<a class="mdl-navigation__link notif" href="#" onclick="goToLatestDiffPage(\\\''+ edit.title +'\\\')" style="display:none;'+ style +'" id="recentChange-'+ edit.revID +'"><i id="title-'+ edit.revID +'"></i><br><b>'+ edit.user +'</b> ('+ sizeDiff +')<br /><span id="comment-'+ edit.revID +'"></span><br>'+ edit.tags +'</a>');
+                $('#title-'+ edit.revID).text(edit.title); // XSS security
+                $('#comment-'+ edit.revID).text(edit.comment);
                 $("#recentChange-"+ edit.revID).fadeIn(); // fancy
             }
             
@@ -72,6 +88,16 @@ function refreshLive() {
 }
 
 function goToLatestDiffPage(article) {
+    $("#welcomeContainer").hide();
+    $("iframe").hide();
+    $("#loadingContainer").show();
+
+    $("iframe").on("load", ()=>{
+        // Page loaded handke
+        $("#welcomeContainer").hide();
+        $("iframe").show();
+        $("#loadingContainer").hide();
+    });
     // Nav to latest diff page
     $.getJSON("https://en.wikipedia.org/w/api.php?action=query&prop=revisions&titles="+ encodeURIComponent(article) +"&rvslots=*&rvprop=ids%7Cuser&formatversion=2&format=json", r=>{
             // We got the response

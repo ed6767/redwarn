@@ -42,7 +42,7 @@ wikiEditor.info = { // API
         });
     },
 
-    "writeConfig": ()=> {
+    "writeConfig": (noRedirect, callback)=> { // CALLBACK ONLY IF NOREDIRECT IS TRUE.
         // Write config to the users page and refresh
         let finalTxt = `
 /*<nowiki>
@@ -75,6 +75,7 @@ wikiEditor.config = `+ JSON.stringify(wikiEditor.config) +"; //</nowiki>"; // ge
                     wikiEditor.visuals.toast.show("Sorry, there was an error. See the console for more info. Your changes have not been saved.");
                 } else {
                     // Success!
+                    if (noRedirect) {callback(); return;}; // DO NOT continue if no redirect is requested
                     window.location.hash = "#configChange";
                     window.location.reload(); // we done
                 }
@@ -291,7 +292,7 @@ wikiEditor.config = `+ JSON.stringify(wikiEditor.config) +"; //</nowiki>"; // ge
 
     "quickWelcome" : un=>{
         // Quickly welcome the current user
-        wikiEditor.info.addWikiTextToUserPage(wikiEditor.info.targetUsername(un), "\n"+ wikiEditor.welcome() +"\n", false);
+        wikiEditor.info.addWikiTextToUserPage(wikiEditor.info.targetUsername(un), "\n"+ wikiEditor.welcome() +" " + wikiEditor.sign() +"\n", false, "Welcome!");
     },
 
     // Used for rollback
@@ -341,11 +342,12 @@ wikiEditor.config = `+ JSON.stringify(wikiEditor.config) +"; //</nowiki>"; // ge
         // VERY BASIC Convert WikiText to string
         try {
             wikiTxt = wikiTxt.replace(/<!--[^>]*-->/g, ""); // Strip html comments
-            wikiTxt.match(/\[\[(?:[^\]\]]*)\]\]/g).forEach(t=>{
+            wikiTxt.match(/\[\[(?:[^\]\]]*)\]\]/g).forEach(t=>{ // match [[*]]
                 txtToKeep = (a=>{return a[a.length - 1];})(t.split("|")).replace("]]", ""); // Last | iin the string then rm the end
                 wikiTxt = wikiTxt.replace(t, txtToKeep); // now replace
             });
             wikiTxt = wikiTxt.replace(/'''/g, ""); // rm bold
+            wikiTxt = wikiTxt.replace(/''/g, ""); // rm italic
         } catch (err) {} // Probably no wikitxt there
          return wikiTxt;
     }
