@@ -54,8 +54,8 @@ function refreshLive() {
         arr.forEach(edit => {
             console.log(edit);
             // Clear excess
-            if ($('a[id^="recentChange"]').length > 50) {
-                // Max 50, delete bottom
+            if ($('a[id^="recentChange"]').length > 250) {
+                // Max 250 (rev8), delete bottom
                 $('a[id^="recentChange"]').last().remove(); // remove the last one
             }
             // Add new

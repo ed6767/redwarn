@@ -17,9 +17,11 @@ function redirect(url, inNewTab) {
 }
 
 var wikiEditor = {
-    "version" : "rev7", // don't forget to change each version!
+    "version" : "rev8", // don't forget to change each version!
     "sign": ()=>{return atob("fn5+fg==")}, // we have to do this because mediawiki will swap this out with devs sig.
-    "welcome": ()=> {return atob("e3tzdWJzdDpXZWxjb21lfX0=");},
+    "welcome": ()=> {return atob("e3tzdWJzdDpXZWxjb21lfX0=");}, // welcome template
+    "welcomeIP": ()=> {return atob("e3tzdWJzdDp3ZWxjb21lLWFub259fQ==");}, // welcome IP template
+    "sharedIPadvice" : ()=> {return atob("XG46e3tzdWJzdDpTaGFyZWQgSVAgYWR2aWNlfX0=");}, // if this is a shared...
     "visuals" : {
         "init" : (callback) => {
             // Welcome message

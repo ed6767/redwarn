@@ -48,6 +48,9 @@ wikiEditor.ui = {
         // Add toast handler
         addMessageHandler("pushToast`*", m=>wikiEditor.visuals.toast.show(m.split('`')[1],false,false, 5000));
 
+        // Add admin report handler
+        addMessageHandler("adminR", ()=>wikiEditor.ui.openAdminReport(un));
+
         // Add submit handler
 
         addMessageHandler("applyNotice`*", eD=> {
@@ -65,7 +68,7 @@ wikiEditor.ui = {
         // Check most recent warning level
 
         wikiEditor.info.lastWarningLevel(wikiEditor.info.targetUsername(un), (w, usrPgMonth, userPg)=>{
-            let lastWarning = [ // Return HTML for last warning level. TODO: add preview section on click
+            let lastWarning = [ // Return HTML for last warning level.
                 // NO PAST WARNING
                 `
                 <span class="material-icons" id="PastWarning" style="cursor:help;position: relative;top: 5px;padding-left: 10px;color:green;">thumb_up</span>
@@ -106,11 +109,11 @@ wikiEditor.ui = {
 
                 // Final/Only Warning (dark red) TODO: Click opens admin report pannel.
                 `
-                <span class="material-icons" id="PastWarning" style="cursor:help;position: relative;top: 5px;padding-left: 10px;color:#a20000;">report</span>
+                <span class="material-icons" id="PastWarning" style="cursor:pointer;position: relative;top: 5px;padding-left: 10px;color:#a20000;" onclick="window.parent.postMessage('adminR');">report</span>
                 <div class="mdl-tooltip mdl-tooltip--large" for="PastWarning">
                     <span style="font-size:x-small;">
                     Has been given a Level 4 Final or ONLY warning.<br/>
-                    Click here to report to admins.
+                    Click here to report to admins for vandalism. Review user page first.
                     </span>
                 </div>
                 `
@@ -193,7 +196,9 @@ wikiEditor.ui = {
 
                         "quickWel" : un=>wikiEditor.info.quickWelcome(un), // Submit quick welcome
 
-                        "newNotice" : un=>wikiEditor.ui.beginWarn(false, un) // show new warning dialog
+                        "newNotice" : un=>wikiEditor.ui.beginWarn(false, un), // show new warning dialog
+
+                        "adminReport" : un=>wikiEditor.ui.openAdminReport(un)
                     })[act](targetUsername);
                     
                 },
@@ -317,6 +322,9 @@ wikiEditor.ui = {
     "requestSpeedyDelete" : (pg)=>{
         // Open Speedy Deletion dialog for first selection, i.e I'm requesting the speedy deletion of..
         // Programming this is proving to be very boring.
+        // Add toast handler
+        addMessageHandler("pushToast`*", m=>wikiEditor.visuals.toast.show(m.split('`')[1],false,false,15000));
+
         addMessageHandler("csdR`*", rs=>{
             // Reason recieved.
             let reason = eval(rs.split("`")[1]);
@@ -355,6 +363,9 @@ wikiEditor.ui = {
     },
 
     "openPreferences" : () => { // Open Preferences page
+        // Add toast handler
+        addMessageHandler("pushToast`*", m=>wikiEditor.visuals.toast.show(m.split('`')[1],false,false,15000));
+
         addMessageHandler("config`*", rs=>{ // On config change
             // New config recieved
             let config = JSON.parse(atob(rs.split("`")[1])); // b64 encoded json string
@@ -377,6 +388,72 @@ wikiEditor.ui = {
         // Open preferences page with no padding, full screen
         dialogEngine.create(mdlContainers.generateContainer(`
         [[[[include preferences.html]]]]
-        `, document.body.offsetWidth, document.body.offsetHeight), true).showModal();
+        `, document.body.offsetWidth, document.body.offsetHeight), true).showModal(); // TRUE HERE MEANS NO PADDING.
+    },
+
+    "openAdminReport" : (un)=> { // Open admin report dialog
+        // Add toast handler
+        addMessageHandler("pushToast`*", m=>wikiEditor.visuals.toast.show(m.split('`')[1],false,false,2500));
+
+        // On report
+        addMessageHandler("report`*", m=>{
+            let reportContent = m.split('`')[1]; // report content
+            let target = m.split('`')[2]; // target username
+            let targetIsIP = wikiEditor.info.isUserAnon(target); // is the target an IP? (2 different types of reports)
+            console.log("reporting "+ target + ": "+ reportContent);
+            console.log("is ip? "+ (targetIsIP ? "yes" : "no"));
+            wikiEditor.visuals.toast.show("Reporting "+ target +"...", false, false, 2000); // show toast
+            // Submit the report. MUST REPLACE WITH REAL AIV WHEN DONE AND WITH SANDBOX IN DEV!    
+            //let aivPage = "User:Ed6767/sandbox"; // dev
+            let aivPage = "Wikipedia:Administrator_intervention_against_vandalism"; // PRODUCTION! 
+
+            $.getJSON("https://en.wikipedia.org/w/api.php?action=query&prop=revisions&titles="+aivPage+"&rvslots=*&rvprop=content&formatversion=2&format=json", latestR=>{
+                // Grab text from latest revision of AIV page
+                // Check if exists
+                let revisionWikitext =  latestR.query.pages[0].revisions[0].slots.main.content; // Set wikitext
+                if (revisionWikitext.toLowerCase().includes(target.toLowerCase())) {// If report is already there
+                    wikiEditor.visuals.toast.show("This user has already been reported.", false, false, 5000); // show already reported toast
+                    return; // Exit
+                }
+
+                // Let's continue
+                // We don't need to do anything special. Just shove our report at the bottom of the page, although, may be advisiable to change this if ARV format changes
+                let textToAdd = "*" + (targetIsIP ? "{{IPvandal|" : "{{vandal|") + target + "}} " + reportContent; // DANGER! WIKITEXT (here is fine. be careful w changes.) - if target IP give correct template, else normal
+                let finalTxt = revisionWikitext + "\n\n" + textToAdd; // compile final string
+                // Now we just submit
+                $.post("https://en.wikipedia.org/w/api.php", {
+                    "action": "edit",
+                    "format": "json",
+                    "token" : mw.user.tokens.get("csrfToken"),
+                    "title" : aivPage,
+                    "summary" : "Reporting "+ target +" [[WP:REDWARN|(RedWarn)]]", // summary sign here
+                    "text": finalTxt
+                }).done(dt => {
+                    // We done. Check for errors, then callback appropriately
+                    if (!dt.edit) {
+                        // Error occured or other issue
+                        console.error(dt);
+                        dialogEngine.dialog.showModal(); // reshow dialog
+                        wikiEditor.visuals.toast.show("Sorry, there was an error, likely an edit conflict. Try reporting again."); // That's it
+                    } else {
+                        // Success! No need to do anything else.
+                        wikiEditor.visuals.toast.show("User reported.", false, false, 5000); // we done
+                    }
+                });
+            });
+        }); // END ON REPORT EVENT
+
+        // Check matching user
+        if (wikiEditor.info.targetUsername(un) == wikiEditor.info.getUsername()) {
+            // Usernames are the same, give toast.
+            wikiEditor.visuals.toast.show("You can not report yourself, nor can you test this feature except in a genuine case.", false, false, 7500);
+            return; // DO NOT continue.
+        }
+
+
+        // See adminReport.html for code
+        dialogEngine.create(mdlContainers.generateContainer(`
+        [[[[include adminReport.html]]]]
+        `, 500, 410)).showModal();
     }
 }

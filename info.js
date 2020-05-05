@@ -5,6 +5,12 @@ wikiEditor.info = { // API
         return mw.config.values.wgRelevantUserName},
     "getUsername":  ()=>{return mw.config.values.wgUserName},
 
+    "isUserAnon" : un=> {
+        // Detect if user is an IP address
+        let regEx = un.match(/([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}|(\d{1,3}\.){3}\d{1,3}/g); // this regex matches all ipv4 and ipv6 addresses. thanks: http://regexlib.com/UserPatterns.aspx?authorId=3e359e7e-cff5-4149-ba94-7baeae099d9c
+        return (regEx != null); // If matches is not null then yes
+    },
+
     "getConfig": (callback, resetToDefault) => { // IF RESETTODEFAULT IS TRUE IT WILL DO IT
         
         let defaultConfig = { // Default config on reset or anything like that
@@ -295,7 +301,14 @@ wikiEditor.config = `+ JSON.stringify(wikiEditor.config) +"; //</nowiki>"; // ge
 
     "quickWelcome" : un=>{
         // Quickly welcome the current user
-        wikiEditor.info.addWikiTextToUserPage(wikiEditor.info.targetUsername(un), "\n"+ wikiEditor.welcome() +" " + wikiEditor.sign() +"\n", false, "Welcome!");
+        // Check if registered or unregistered user
+        if (wikiEditor.info.isUserAnon(wikiEditor.info.targetUsername(un))) {
+            // IP Editor - send IP welcome
+            wikiEditor.info.addWikiTextToUserPage(wikiEditor.info.targetUsername(un), "\n"+ wikiEditor.welcomeIP() +" " + wikiEditor.sign() +"\n", false, "Welcome! (IP)");
+        } else {
+            // Registered user
+            wikiEditor.info.addWikiTextToUserPage(wikiEditor.info.targetUsername(un), "\n"+ wikiEditor.welcome() +" " + wikiEditor.sign() +"\n", false, "Welcome!");
+        }
     },
 
     // Used for rollback

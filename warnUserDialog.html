@@ -350,6 +350,10 @@
             // Get preview as usual
             getTemplateName(name=>{
             var wikiTxt = "{{subst:"+ name +"}} " + "`+ wikiEditor.sign() +`";
+            // Check if this user is an IP, if so, add the advice template to the end
+            if (`+ (wikiEditor.info.isUserAnon(wikiEditor.info.targetUsername(un)) ? "true" : "false") +` == true) {
+                wikiTxt += "`+ wikiEditor.sharedIPadvice() +`";
+            }
             document.getElementById("wikiTxt").value = wikiTxt; // set edit box
             window.parent.postMessage('generatePreview\\\`'+ wikiTxt, '*');
             }); 
@@ -415,7 +419,7 @@
            // A disclaimer toast needs to be shown
            pushToast(rules[i].note);
        }
-       // TODO!!
+
        let noneStandard = {
                 'uw-agf-sock': 'Optional username of other account (without User:) ',
                 'uw-bite': "Username of 'bitten' user (without User:) ",
@@ -492,7 +496,7 @@
                 pushToast("Sign your notice!");
                 return; // Do not continue
             }
-            window.parent.postMessage('applyNotice\\\`' + document.getElementById("trgtUsrVisualBox").value + '\\\`' + wikiTxt + '\\\`' + "New Notice RE: "+ rules[data.template].name); // Push upstairs and commit
+            window.parent.postMessage('applyNotice\\\`' + document.getElementById("trgtUsrVisualBox").value + '\\\`' + wikiTxt + '\\\`' + "New Notice: "+ rules[data.template].name); // Push upstairs and commit
             window.parent.postMessage("closeDialog"); // We done here. Top will refresh or reshow if error occurs.
         });
     }

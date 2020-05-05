@@ -144,6 +144,7 @@ wikiEditor.rollback = { // Rollback features
 
         // Load icons from config
         // ? config : default
+        // This is a mess :p
         let rollBackVandal = wikiEditor.config['rollBackVandalIcon'] != null ? wikiEditor.config['rollBackVandalIcon'] : "delete_forever"; // vandal
         let rollBackRM = !(wikiEditor.config['rollBackRMIcon'] == null) ? wikiEditor.config['rollBackRMIcon'] : "format_indent_increase"; // rm
         let rollBackNC = !(wikiEditor.config['rollBackNCIcon'] == null) ? wikiEditor.config['rollBackNCIcon'] : "work_outline"; // nc
