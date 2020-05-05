@@ -141,38 +141,48 @@ wikiEditor.rollback = { // Rollback features
     "loadIcons" : () => {
         // Add icons to page
         // Icons for current revision
+
+        // Load icons from config
+        // ? config : default
+        let rollBackVandal = wikiEditor.config['rollBackVandalIcon'] != null ? wikiEditor.config['rollBackVandalIcon'] : "delete_forever"; // vandal
+        let rollBackRM = !(wikiEditor.config['rollBackRMIcon'] == null) ? wikiEditor.config['rollBackRMIcon'] : "format_indent_increase"; // rm
+        let rollBackNC = !(wikiEditor.config['rollBackNCIcon'] == null) ? wikiEditor.config['rollBackNCIcon'] : "work_outline"; // nc
+        let rollBack = !(wikiEditor.config['rollBackIcon'] == null) ? wikiEditor.config['rollBackIcon'] : "replay"; // normal rollback
+        let rollBackAGF = !(wikiEditor.config['rollBackAGFIcon'] == null) ? wikiEditor.config['rollBackAGFIcon'] : "thumb_up"; // agf
+        let rollBackPrev = !(wikiEditor.config['rollBackPrevIcon'] == null) ? wikiEditor.config['rollBackPrevIcon'] : "compare_arrows"; // prev
+        let wlRU = !(wikiEditor.config['wlRUIcon'] == null) ? wikiEditor.config['wlRUIcon'] : "sentiment_satisfied_alt"; // welcome revision user
         let currentRevIcons = `
-        <div id="rollBackVandal" class="icon material-icons"><span style="cursor: pointer; font-size:28px; padding-right:5px; color:red;" onclick="wikiEditor.rollback.apply('vandalism');">delete_forever</span></div>
+        <div id="rollBackVandal" class="icon material-icons"><span style="cursor: pointer; font-size:28px; padding-right:5px; color:red;" onclick="wikiEditor.rollback.apply('vandalism');">`+ rollBackVandal +`</span></div>
         <div class="mdl-tooltip mdl-tooltip--large" for="rollBackVandal">
             Quick rollback vandalism
         </div>
 
-        <div id="rollBackRM" class="icon material-icons"><span style="cursor: pointer; font-size:28px; padding-right:5px; color:orange;" onclick="wikiEditor.rollback.apply('rm content w no good reason or consensus');">format_indent_increase</span></div>
+        <div id="rollBackRM" class="icon material-icons"><span style="cursor: pointer; font-size:28px; padding-right:5px; color:orange;" onclick="wikiEditor.rollback.apply('rm content w no good reason or consensus');">`+ rollBackRM +`</span></div>
         <div class="mdl-tooltip mdl-tooltip--large" for="rollBackRM">
             Quick rollback removal of content with no good reason or consensus
         </div>
 
-        <div id="rollBackNC" class="icon material-icons"><span style="cursor: pointer; font-size:28px; padding-right:5px; color:gold;" onclick="wikiEditor.rollback.apply('non-constructive edit');">work_outline</span></div>
+        <div id="rollBackNC" class="icon material-icons"><span style="cursor: pointer; font-size:28px; padding-right:5px; color:gold;" onclick="wikiEditor.rollback.apply('non-constructive edit');">`+ rollBackNC +`</span></div>
         <div class="mdl-tooltip mdl-tooltip--large" for="rollBackNC">
             Quick rollback non-constructive edit
         </div>
         
-        <div id="rollBack" class="icon material-icons"><span style="cursor: pointer; font-size:28px; padding-right:5px; color:blue;" onclick="wikiEditor.rollback.promptRollbackReason('');">replay</span></div>
+        <div id="rollBack" class="icon material-icons"><span style="cursor: pointer; font-size:28px; padding-right:5px; color:blue;" onclick="wikiEditor.rollback.promptRollbackReason('');">`+ rollBack +`</span></div>
         <div class="mdl-tooltip mdl-tooltip--large" for="rollBack">
             Rollback
         </div>
         
-        <div id="rollBackAGF" class="icon material-icons"><span style="cursor: pointer; font-size:28px; padding-right:5px; color:green;" onclick="wikiEditor.rollback.promptRollbackReason('revert good faith edits ');">thumb_up</span></div>
+        <div id="rollBackAGF" class="icon material-icons"><span style="cursor: pointer; font-size:28px; padding-right:5px; color:green;" onclick="wikiEditor.rollback.promptRollbackReason('revert good faith edits ');">`+ rollBackAGF +`</span></div>
         <div class="mdl-tooltip mdl-tooltip--large" for="rollBackAGF">
             Assume Good Faith and Rollback
         </div>
         
-        <div id="rollBackPrev" class="icon material-icons"><span style="cursor: pointer; font-size:28px; padding-right:5px;" onclick="wikiEditor.rollback.preview();">compare_arrows</span></div>
+        <div id="rollBackPrev" class="icon material-icons"><span style="cursor: pointer; font-size:28px; padding-right:5px;" onclick="wikiEditor.rollback.preview();">`+ rollBackPrev +`</span></div>
         <div class="mdl-tooltip mdl-tooltip--large" for="rollBackPrev">
             Preview Rollback
         </div>
 
-        <div id="wlRU" class="icon material-icons"><span style="cursor: pointer; font-size:28px; padding-right:5px;" onclick="wikiEditor.rollback.welcomeRevUsr();">sentiment_satisfied_alt</span></div>
+        <div id="wlRU" class="icon material-icons"><span style="cursor: pointer; font-size:28px; padding-right:5px;" onclick="wikiEditor.rollback.welcomeRevUsr();">`+ wlRU +`</span></div>
         <div class="mdl-tooltip mdl-tooltip--large" for="wlRU">
             Quick Welcome User
         </div>

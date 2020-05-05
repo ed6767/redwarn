@@ -5,12 +5,15 @@ wikiEditor.info = { // API
         return mw.config.values.wgRelevantUserName},
     "getUsername":  ()=>{return mw.config.values.wgUserName},
 
-    "getConfig": (callback) => {
-        if (wikiEditor.config) {callback();} // if config loaded, no need to reload
-
+    "getConfig": (callback, resetToDefault) => { // IF RESETTODEFAULT IS TRUE IT WILL DO IT
+        
         let defaultConfig = { // Default config on reset or anything like that
             "lastVersion" : wikiEditor.version
         };
+
+        if (resetToDefault) {wikiEditor.config = defaultConfig; wikiEditor.info.writeConfig(); return;} // If reset to default, do it
+
+        if (wikiEditor.config) {callback();} // if config loaded, no need to reload
 
 
         // gets user config from their page. 

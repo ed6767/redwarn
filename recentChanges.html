@@ -77,10 +77,13 @@ function refreshLive() {
                     
                 }
                 let style = (sizeDiff < 0) ? "background-color: rgba(`+ rmCol +`,"+ opacityLevel +"); color:black;" : "background-color: rgba(`+ addCol +`,"+ opacityLevel +"); color:black;" // First neg style, next add style
-                $("#recentChangesContainer").prepend('<a class="mdl-navigation__link notif" href="#" onclick="goToLatestDiffPage(\\\''+ edit.title +'\\\')" style="display:none;'+ style +'" id="recentChange-'+ edit.revID +'"><i id="title-'+ edit.revID +'"></i><br><b>'+ edit.user +'</b> ('+ sizeDiff +')<br /><span id="comment-'+ edit.revID +'"></span><br>'+ edit.tags +'</a>');
+                $("#recentChangesContainer").prepend('<a class="mdl-navigation__link notif" href="#" style="display:none;'+ style +'" id="recentChange-'+ edit.revID +'"><i id="title-'+ edit.revID +'"></i><br><b>'+ edit.user +'</b> ('+ sizeDiff +')<br /><span id="comment-'+ edit.revID +'"></span><br>'+ edit.tags +'</a>');
                 $('#title-'+ edit.revID).text(edit.title); // XSS security
                 $('#comment-'+ edit.revID).text(edit.comment);
                 $("#recentChange-"+ edit.revID).fadeIn(); // fancy
+
+                // Append click handler
+                $('#recentChange-'+ edit.revID).on("click", ()=>goToLatestDiffPage(edit.title));
             }
             
         });

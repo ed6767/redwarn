@@ -355,7 +355,7 @@ wikiEditor.ui = {
     },
 
     "openPreferences" : () => { // Open Preferences page
-        addMessageHandler("config`*", rs=>{
+        addMessageHandler("config`*", rs=>{ // On config change
             // New config recieved
             let config = JSON.parse(atob(rs.split("`")[1])); // b64 encoded json string
             //Write to our config
@@ -369,6 +369,11 @@ wikiEditor.ui = {
             // Push change
             wikiEditor.info.writeConfig();
         }); 
+
+        addMessageHandler("resetConfig", rs=>{
+            // Reset config recieved, set config back to default
+            wikiEditor.info.getConfig(()=>{}, true); // TRUE HERE MEANS RESET TO DEAULT
+        });
         // Open preferences page with no padding, full screen
         dialogEngine.create(mdlContainers.generateContainer(`
         [[[[include preferences.html]]]]
