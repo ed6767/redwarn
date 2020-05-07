@@ -17,7 +17,7 @@ function redirect(url, inNewTab) {
 }
 
 var wikiEditor = {
-    "version" : "rev8", // don't forget to change each version!
+    "version" : "rev9", // don't forget to change each version!
     "sign": ()=>{return atob("fn5+fg==")}, // we have to do this because mediawiki will swap this out with devs sig.
     "welcome": ()=> {return atob("e3tzdWJzdDpXZWxjb21lfX0=");}, // welcome template
     "welcomeIP": ()=> {return atob("e3tzdWJzdDp3ZWxjb21lLWFub259fQ==");}, // welcome IP template
@@ -62,15 +62,62 @@ var wikiEditor = {
         },
 
         "pageIcons" : ()=> {
+            // Thanks to User:Awesome Aasim for the suggestion and some sample code.
             try {
+                let pageIconHTML = ""; // obj it is appended to
                 /* [[[[include pageIcons.html]]]] */
+
+                // Possible icons locations: default (page icons area) or sidebar
+                let iconsLocation = wikiEditor.config.pgIconsLocation ? wikiEditor.config.pgIconsLocation : "default"; // If set in config, use config
+                if (iconsLocation == "default") {
+                    try {
+                        document.getElementsByClassName("mw-indicators mw-body-content")[0].innerHTML += pageIconHTML; // Append our icons to the page icons
+                    } catch (error) {
+                        // Incompatible theme, use sidebar instead
+                        iconsLocation = "sidebar";
+                    }
+                }
+                // delib. not else if
+                if (iconsLocation == "sidebar") {
+                    // Add our icons to the sidebar (w/ all theme compatibility)
+                    (_t=>{
+                        $('<div class="sidebar-chunk" id="redwarn"><h2><span>RedWarn</span></h2><div class="sidebar-inner">' + _t + '</div></div>').prependTo("#mw-site-navigation");
+                        $('<div class="portal" role="navigation" id="redwarn" aria-labelledby="p-redwarn-label">' + _t + '</div>').prependTo("#mw-panel");
+                        $('<div role="navigation" class="portlet generated-sidebar" id="redwarn" aria-labelledby="p-redwarn-label">' + _t + '</div>').prependTo("#sidebar");
+                        $('<div class="portlet" id="redwarn">' + _t + '</div>').prependTo("#mw_portlets");
+                        $('<ul id="redwarn">' + _t + '</ul>').appendTo("#mw-mf-page-left"); //minerva
+                        $("#p-navigation").prependTo("#mw-panel");
+                        $("#p-search").prependTo("#quickbar");
+                        $('#p-logo').prependTo("#mw-site-navigation");
+                        $('#p-logo').prependTo("#mw-panel");
+                        $('#p-logo').prependTo("#sidebar");
+                        $('#p-logo').prependTo("#mw_portlets");
+                        $('ul.hlist:first').appendTo('#mw-mf-page-left');
+
+                        // Add click event handlers
+                        $(document).click(e=> {
+                            if ($(e.target).closest("#redwarn").length == 0) {
+                                $("#redwarn").removeClass("dropdown-active");
+                            }
+                        });
+                        $(".sidebar-chunk").find("h2").click(e=>{
+                            e.preventDefault();
+                            if ($(this).parent().attr("id") != "redwarn") {
+                                $("#redwarn").removeClass("dropdown-active");
+                            } else {
+                                $("#redwarn").toggleClass("dropdown-active");
+                            }
+                        });
+                        // We done
+                    })(` <!-- hand in pageIconHTML and some extra gubbins to become _t -->
+                        <h3 id="redwarn-label" lang="en" dir="ltr">RedWarn tools</h3><div class="mw-portlet-body body pBody" id="redwarn-tools">
+                        ` + pageIconHTML + `
+                        </div>
+                    `);
+                }
             } catch (error) {
-                // Likely invalid theme
-                dialogEngine.create(`
-                <b>Sorry</b><br>
-                RedWarn isn't compatible with this theme. Please revert to a compatible theme to continue using RedWarn.<br>
-                <a href="https://en.wikipedia.org/wiki/Special:Preferences#mw-prefsection-rendering" style="font-size:25px">Go to Theme Preferences</a> <br>
-                <a href='#' onclick='dialogEngine.dialog.close();'>Close</a>`).showModal();
+                // Likely invalid theme, not all themes can use default
+                mw.notify("RedWarn isn't compatible with this theme.");
                 return; // Exit
             }
             

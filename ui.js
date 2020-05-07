@@ -176,7 +176,19 @@ wikiEditor.ui = {
                     let targetUsername = "";
                     if (hrefOfSelection.includes("/wiki/User_talk:") || hrefOfSelection.includes("/wiki/User:")) {
                         // This is easy because w should just be ablt to spit at last :
-                        targetUsername = (a=>{return a[a.length - 1]})(hrefOfSelection.split(":")).split("/")[0]; // wacky function returns last. Split at slash [0] in case it is a link to a user subpage.
+                        // We run a regex (rev8 ipv6 fix)
+                        /*
+                            Find "User_talk"
+                            OR "User"
+                            Then ":"
+                            Or "/"
+                            Anything but "/"
+                            OR line break
+                        */
+                        let matches = (hrefOfSelection + "\n").match(/(?:(?:(?:User_talk))|(?:(?:User)(?:\:))|(?:(?:\/)(?:[^\/]*)(?:(?:\n)|(?:\r\n))))/g);
+                        // result /User_talk:user, so we removed everything up to the first colon
+                        let unURL = matches[0];
+                        targetUsername = unURL.replace(unURL.match(/(?:[^\:]*)(?:\:)/g)[0], ""); // Regex first group of colon and remove
                     } else {
                         // Contribs link, go split at last slash
                         targetUsername = (a=>{return a[a.length - 1]})(hrefOfSelection.split("/"));

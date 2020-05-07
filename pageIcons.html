@@ -1,7 +1,7 @@
 DO NOT REMOVE THIS LINE */
 
 if (mw.config.get("wgRelevantPageName").includes("User:") || mw.config.get("wgRelevantPageName").includes("User_talk:")) {
-    document.getElementsByClassName("mw-indicators mw-body-content")[0].innerHTML += `
+    pageIconHTML += `
         <!-- BEGIN USER ONLY ICONS -->
         &nbsp;&nbsp;&nbsp;
         <div id="newUsrMsg" class="icon material-icons"><span style="cursor: pointer;" onclick="wikiEditor.ui.newMsg();">send</span></div>
@@ -25,7 +25,7 @@ if (mw.config.get("wgRelevantPageName").includes("User:") || mw.config.get("wgRe
         </div>
     `;
 } // end this section
-document.getElementsByClassName("mw-indicators mw-body-content")[0].innerHTML += `
+pageIconHTML += `
     &nbsp;&nbsp;&nbsp;
     <!-- START PAGE ONLY ICONS -->
 
