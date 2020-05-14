@@ -33,9 +33,9 @@ wikiEditor.rollback = { // Rollback features
     },
 
     "apply" : (reason) => {
-        // Apply rollback
-        wikiEditor.visuals.toast.show("Please wait...", false, false, 1000);
-        wikiEditor.info.isLatestRevision(mw.config.get("wgRelevantPageName"), mw.util.getParamValue("diff"), un=>{
+        wikiEditor.ui.loadDialog.show("Reverting...");
+        // bug fix rev10, get revid from html
+        wikiEditor.info.isLatestRevision(mw.config.get("wgRelevantPageName"), $('#mw-diff-ntitle1 > strong > a').attr('href').split('&')[1].split('=')[1], un=>{
             // Fetch latest revision not by user
             wikiEditor.info.latestRevisionNotByUser(mw.config.get("wgRelevantPageName"), un, (content, summary, rID) => {
                 // Got it! Now set page content to summary
@@ -53,11 +53,12 @@ wikiEditor.rollback = { // Rollback features
                     if (!dt.edit) {
                         // Error occured or other issue
                         console.error(dt);
+                        wikiEditor.ui.loadDialog.close();
                         wikiEditor.visuals.toast.show("Sorry, there was an error, likely an edit conflict. Your rollback has not been applied.");
 
                     } else {
-                        
                         // Success! Now show warning dialog but w correct info
+                        wikiEditor.ui.loadDialog.close();
                         wikiEditor.ui.beginWarn(false, un, mw.config.get("wgRelevantPageName"));
 
                         wikiEditor.visuals.toast.show("Rollback complete.", "DON'T WARN AND VIEW", ()=>{
@@ -158,12 +159,12 @@ wikiEditor.rollback = { // Rollback features
             Quick rollback vandalism
         </div>
 
-        <div id="rollBackRM" class="icon material-icons"><span style="cursor: pointer; font-size:28px; padding-right:5px; color:orange;" onclick="wikiEditor.rollback.apply('rm content w no good reason or consensus');">`+ rollBackRM +`</span></div>
+        <div id="rollBackRM" class="icon material-icons"><span style="cursor: pointer; font-size:28px; padding-right:5px; color:orange;" onclick="wikiEditor.rollback.apply('unexplained content removal');">`+ rollBackRM +`</span></div>
         <div class="mdl-tooltip mdl-tooltip--large" for="rollBackRM">
-            Quick rollback removal of content with no good reason or consensus
+            Quick rollback unexplained content removal
         </div>
 
-        <div id="rollBackNC" class="icon material-icons"><span style="cursor: pointer; font-size:28px; padding-right:5px; color:gold;" onclick="wikiEditor.rollback.apply('non-constructive edit');">`+ rollBackNC +`</span></div>
+        <div id="rollBackNC" class="icon material-icons"><span style="cursor: pointer; font-size:28px; padding-right:5px; color:gold;" onclick="wikiEditor.rollback.apply('non-constructive');">`+ rollBackNC +`</span></div>
         <div class="mdl-tooltip mdl-tooltip--large" for="rollBackNC">
             Quick rollback non-constructive edit
         </div>

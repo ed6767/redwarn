@@ -210,8 +210,21 @@ wikiEditor.ui = {
 
                         "newNotice" : un=>wikiEditor.ui.beginWarn(false, un), // show new warning dialog
 
-                        "adminReport" : un=>wikiEditor.ui.openAdminReport(un)
-                    })[act](targetUsername);
+                        "adminReport" : un=>wikiEditor.ui.openAdminReport(un),
+
+                        "usrPronouns": un=>{ // Show a tost with this users prefered pronouns
+                            wikiEditor.info.getUserPronouns(un, p=>{
+                                wikiEditor.visuals.toast.show(un + "'s pronouns are "+ p, false, false, 3000);
+                            });
+                        },
+
+                        "usrEditCount": un=>{ // Show a tost with this users prefered pronouns
+                            wikiEditor.info.getUserEditCount(un, count=>{
+                                wikiEditor.visuals.toast.show(un + " has made "+ count + " edits.", false, false, 3000);
+                            });
+                        }
+
+                    })[act](targetUsername.trim());
                     
                 },
                 items: {
@@ -221,7 +234,14 @@ wikiEditor.ui = {
                     "newNotice": {name: "New Notice"},
                     "quickWel": {name: "Quick Welcome"},
                     "contribs": {name: "Contributions"},
-                    "accInfo": {name: "Account Info"},
+                    "aIsubmenu": {
+                        "name": "Account info", 
+                        "items": {
+                            "accInfo": {name: "Central Auth"},
+                            "usrPronouns": {"name": "Pronouns"},
+                            "usrEditCount": {"name": "Edit Count"}
+                        }
+                    },
                     "adminReport": {name: "Report to Admin"}
                 }
             });
@@ -467,5 +487,78 @@ wikiEditor.ui = {
         dialogEngine.create(mdlContainers.generateContainer(`
         [[[[include adminReport.html]]]]
         `, 500, 410)).showModal();
+    },
+
+    "loadDialog" : {
+        // Loading dialog
+        "hasInit" : false, 
+        "init" : text=> {
+            if (!wikiEditor.ui.loadDialog.hasInit) { // Only continue if we haven't already appended our container div
+                $("body").append(`
+                <div id="wikiEditorUILoad">
+                </div>
+                `);
+                $("#wikiEditorUILoad").html(`
+                <dialog class="mdl-dialog" id="wikiEditorUILoadDialog">
+                    ` + mdlContainers.generateContainer(`[[[[include loadingSpinner.html]]]]`, 300, 30) +`
+                </dialog>
+                `); // Create dialog with content from loadingSpinner.html
+
+                wikiEditor.ui.loadDialog.dialog = document.querySelector('#wikiEditorUILoadDialog'); // set dialog var
+
+                // Firefox issue fix
+                if (! wikiEditor.ui.loadDialog.dialog.showModal) {
+                    dialogPolyfill.registerDialog(wikiEditor.ui.loadDialog.dialog);
+                }
+
+                wikiEditor.ui.loadDialog.hasInit = true;
+            }
+        },
+
+        "show" : text=> { // Init and create a new loading dialog
+            wikiEditor.ui.loadDialog.init(text); // init
+            wikiEditor.ui.loadDialog.setText(text); // set our text
+            // Show dialog
+            wikiEditor.ui.loadDialog.dialog.showModal();
+            // We done
+        },
+
+        "setText" : text=> $("#wikiEditorUILoadDialog > iframe")[0].contentWindow.postMessage(text, '*'), // Set text of loading by just sending the message to the container
+
+        "close": ()=>wikiEditor.ui.loadDialog.dialog.close() // Close the dialog
+    },
+
+    "sendFeedback" : ()=> {
+        // Open feedback dialog, basically same as newmsg
+        // Setup preview handling
+        addMessageHandler("generatePreview`*", m=>{
+            wikiEditor.info.parseWikitext(m.split("`")[1], parsed=>{ // Split to Wikitext and send over to the API to be handled
+                dialogEngine.dialog.getElementsByTagName("iframe")[0].contentWindow.postMessage({
+                    "action": "parseWikiTxt",
+                    "result": parsed}, '*'); // push to container for handling in dialog and add https:// to stop image breaking
+            });
+        });
+
+        // Add toast handler
+        addMessageHandler("pushToast`*", m=>wikiEditor.visuals.toast.show(m.split('`')[1],false,false,15000));
+
+        // Add submit handler
+
+        addMessageHandler("applyNotice`*", eD=> {
+            // i.e applyNotice`user`wikitext`summary
+            // TODO: maybe b64 encode?
+            let _eD = eD.split("`"); // params
+            let user = _eD[1];
+            let wikiTxt = _eD[2];
+            let summary = _eD[3];
+            // MAKE EDIT
+            wikiEditor.info.addWikiTextToUserPage(user, wikiTxt, true, summary); // Save under date
+        });
+
+        // CREATE DIALOG
+        // MDL FULLY SUPPORTED HERE (container). 
+        dialogEngine.create(mdlContainers.generateContainer(`
+        [[[[include sendFeedback.html]]]]
+        `, 500, 390)).showModal(); // 500x390 dialog, see sendFeedback.html for code
     }
 }

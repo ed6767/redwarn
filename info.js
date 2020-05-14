@@ -113,7 +113,7 @@ wikiEditor.config = `+ JSON.stringify(wikiEditor.config) +"; //</nowiki>"; // ge
         });
     },
 
-    "getRelatedPage" : (pg)=> {
+    "getRelatedPage" : (pg)=> { // TODO - APPEND &VANARTICLE LIKE TWINKLE FOR THIS!
         if (pg) {return pg;} // return page if defined
         try {
             let x = mw.util.getParamValue('vanarticle');
@@ -125,18 +125,18 @@ wikiEditor.config = `+ JSON.stringify(wikiEditor.config) +"; //</nowiki>"; // ge
     },
 
     "parseWikitext" : (wikiTxt, callback) => { // Uses Wikipedia's API to turn Wikitext to string. NEED TO USE POST IF USERPAGE IS LARGE EXT..
-    $.post("https://en.wikipedia.org/w/api.php", {
-                "action": "parse",
-                "format": "json",
-                "contentmodel" : "wikitext",
-                "prop": "text",
-                "pst": true,
-                "assert": "user",
-                "text": wikiTxt
-            }).done(r => {
-                let processedResult = r.parse.text['*'].replace(/\/\//g, "https://").replace(/href=\"\/wiki/g, `href="https://en.wikipedia.org/wiki`); // regex replace w direct urls
-                callback(processedResult); // make callback w HTML
-            });
+        $.post("https://en.wikipedia.org/w/api.php", {
+            "action": "parse",
+            "format": "json",
+            "contentmodel" : "wikitext",
+            "prop": "text",
+            "pst": true,
+            "assert": "user",
+            "text": wikiTxt
+        }).done(r => {
+            let processedResult = r.parse.text['*'].replace(/\/\//g, "https://").replace(/href=\"\/wiki/g, `href="https://en.wikipedia.org/wiki`); // regex replace w direct urls
+            callback(processedResult); // make callback w HTML
+        });
     },
 
     "lastWarningLevel" : (user, callback)=> { // callback(wLevel. thisMonthsNotices, userPg) 0 none 1 notice 2 caution 3 warning 4 final warning
@@ -207,8 +207,8 @@ wikiEditor.config = `+ JSON.stringify(wikiEditor.config) +"; //</nowiki>"; // ge
     },// End lastWarningLevel
 
     "addWikiTextToUserPage" : (user, text, underDate, summary, blacklist, blacklistToast) => {
+        wikiEditor.ui.loadDialog.show("Saving message...");
         // Add text to a page. If underdate true, add it under a date marker
-        wikiEditor.visuals.toast.show("Please wait...", false, false, 2500);
         $.getJSON("https://en.wikipedia.org/w/api.php?action=query&prop=revisions&titles=User_talk:"+user+"&rvslots=*&rvprop=content&formatversion=2&format=json", latestR=>{
             // Grab text from latest revision of talk page
             // Check if exists
@@ -223,6 +223,7 @@ wikiEditor.config = `+ JSON.stringify(wikiEditor.config) +"; //</nowiki>"; // ge
             if (blacklist) {
                 if (revisionWikitext.includes(blacklist)) {
                     // Don't continue and show toast
+                    wikiEditor.ui.loadDialog.close();
                     wikiEditor.visuals.toast.show(blacklistToast, false, false, 5000);
                     return;
                 }
@@ -240,7 +241,7 @@ wikiEditor.config = `+ JSON.stringify(wikiEditor.config) +"; //</nowiki>"; // ge
                     // Locate where the current date section ends so we can append ours to the bottom
                     let locationOfLastLine = wikiTxtLines.indexOf(currentDateHeading) + 1; // in case of date heading w nothing under it
                     for (let i = wikiTxtLines.indexOf(currentDateHeading) + 1; i < wikiTxtLines.length; i++) {
-                        if (wikiTxtLines[i].startsWith("==")) {
+                        if (wikiTxtLines[i].startsWith("==")) { 
                             // New section
                             locationOfLastLine = i - 1; // the line above is therefore the last
                             console.log("exiting loop: " +wikiTxtLines[locationOfLastLine]);
@@ -285,6 +286,7 @@ wikiEditor.config = `+ JSON.stringify(wikiEditor.config) +"; //</nowiki>"; // ge
                 if (!dt.edit) {
                     // Error occured or other issue
                     console.error(dt);
+                    wikiEditor.ui.loadDialog.close();
                     wikiEditor.visuals.toast.show("Sorry, there was an error. See the console for more info. Your message has not been sent.");
                     // Reshow dialog
                     dialogEngine.dialog.showModal();
@@ -366,6 +368,96 @@ wikiEditor.config = `+ JSON.stringify(wikiEditor.config) +"; //</nowiki>"; // ge
             wikiTxt = wikiTxt.replace(/''/g, ""); // rm italic
         } catch (err) {} // Probably no wikitxt there
          return wikiTxt;
+    },
+
+    "getUserPronouns" : (user, callback)=> {
+        // Trying mediawiki api here rather than a jquery get
+        new mw.Api().get({
+            action: 'query',
+            list: 'users',
+            usprop: 'gender',
+            ususers: user
+        }).then(r=>{
+            let gender = r.query.users[0].gender;
+            callback((gender == "male") ? "he/him" : ((gender == "female") ? "she/her" : "they/them")); // callback with our pronouns
+        });
+    },
+
+    "getUserEditCount" : (user, callback)=> {
+        // Trying mediawiki api here rather than a jquery get
+        new mw.Api().get({
+            action: 'query',
+            list: 'users',
+            usprop: 'editcount',
+            ususers: user
+        }).then(r=>{
+            callback(r.query.users[0].editcount); // edit count
+        });
+    },
+
+    "changeWatch" : {
+        // Watches for changes on a page, always latest version and notifies
+        "active" : false,
+        "timecheck" : "",
+        "lastRevID": "",
+        "toggle" : ()=> {
+            if (!wikiEditor.info.changeWatch.active) {
+                // We're not active, make UI changes
+                // Request notification perms
+                if (Notification.permission !== 'granted') Notification.requestPermission();
+
+                $("#rwSpyIcon").css("color", "green");
+                wikiEditor.visuals.toast.show("Alerts Enabled - please keep this tab open.");
+                wikiEditor.info.changeWatch.active = true;
+
+                // Get latest rev id
+                $.getJSON("https://en.wikipedia.org/w/api.php?action=query&prop=revisions&titles="+ encodeURIComponent(mw.config.get("wgRelevantPageName")) +"&rvslots=*&rvprop=ids&formatversion=2&format=json", r=>{
+                    // We got the response, set our ID
+                    wikiEditor.info.changeWatch.lastRevID = r.query.pages[0].revisions[0].revid;
+                    wikiEditor.info.changeWatch.timecheck = setInterval(()=>{ // Check for new revision every 5 seconds
+                        $.getJSON("https://en.wikipedia.org/w/api.php?action=query&prop=revisions&titles="+ encodeURIComponent(mw.config.get("wgRelevantPageName")) +"&rvslots=*&rvprop=ids&formatversion=2&format=json", r2=>{
+                            // Got response, compare
+                            if (wikiEditor.info.changeWatch.lastRevID != r2.query.pages[0].revisions[0].revid) {
+                                // New Revision! Redirect.
+                                clearInterval(wikiEditor.info.changeWatch.timecheck); // clear updates
+                                let latestRId = r2.query.pages[0].revisions[0].revid;
+                                let parentRId = r2.query.pages[0].revisions[0].parentid;
+
+                                if (windowFocused) {
+                                    // Redirect and don't do anything else
+                                    redirect("https://en.wikipedia.org/w/index.php?title="+ encodeURIComponent(mw.config.get("wgRelevantPageName")) +"&diff="+ latestRId +"&oldid="+ parentRId +"&diffmode=source#watchLatestRedirect");
+                                } else {
+                                    // Push notification
+                                    document.title = "**New Edit!** " + document.title; // Add alert to title
+                                    if (Notification.permission !== 'granted') {
+                                        Notification.requestPermission();
+                                    } else {
+                                        let notification = new Notification('New Change to ' + mw.config.get("wgRelevantPageName"), {
+                                            icon: 'https://upload.wikimedia.org/wikipedia/commons/6/63/Wikipedia-logo.png',
+                                            body: 'Click here to view',
+                                        });
+                                        notification.onclick = function() {
+                                            window.focus(); // When focused, we'll redirect anyways
+                                            this.close(); // focus our tab and close notif
+                                        };
+
+                                        window.onfocus = function(){
+                                            // Redirect on focus
+                                            redirect("https://en.wikipedia.org/w/index.php?title="+ encodeURIComponent(mw.config.get("wgRelevantPageName")) +"&diff="+ latestRId +"&oldid="+ parentRId +"&diffmode=source#watchLatestRedirect");
+                                        };
+                                    }
+                                } 
+                            }
+                        });
+                    }, 5000);
+                });
+            } else {
+                clearInterval(wikiEditor.info.changeWatch.timecheck); // clear updates
+                $("#rwSpyIcon").css("color", ""); // clear colour from icon
+                wikiEditor.visuals.toast.show("Alerts Disabled.");
+                wikiEditor.info.changeWatch.active = false;
+            }
+        }
     }
     
 };

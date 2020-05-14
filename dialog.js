@@ -10,15 +10,15 @@ var dialogEngine = {
     "create" : (content, noPad)=>{ 
        
         $("#dialogEngineContainer").html(`
-        <dialog class="mdl-dialog">
+        <dialog class="mdl-dialog" id="dialogEngineDialog">
             `+ content +`
         </dialog>
         `);
 
 
-        dialogEngine.dialog = document.querySelector('dialog');
+        dialogEngine.dialog = document.querySelector('#dialogEngineDialog');
 
-        if (noPad) $("dialog").attr("style", "padding:inherit;"); // if no padding requested
+        if (noPad) $("#dialogEngineDialog").attr("style", "padding:inherit;"); // if no padding requested
 
         // Firefox issue fix
         if (! dialogEngine.dialog.showModal) {

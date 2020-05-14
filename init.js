@@ -1,5 +1,15 @@
 // (c) Ed.E 2020
 
+// Window focus checking n things
+var windowFocused = true;
+
+window.onblur = function(){  
+    windowFocused = false;  
+}  
+window.onfocus = function(){  
+    windowFocused = true;  
+}
+
 function waitForMDLLoad(cb) { // Used to wait for MDL load
     if(typeof componentHandler !== "undefined"){
         cb(); // callback
@@ -17,7 +27,7 @@ function redirect(url, inNewTab) {
 }
 
 var wikiEditor = {
-    "version" : "rev9", // don't forget to change each version!
+    "version" : "rev10dev", // don't forget to change each version!
     "sign": ()=>{return atob("fn5+fg==")}, // we have to do this because mediawiki will swap this out with devs sig.
     "welcome": ()=> {return atob("e3tzdWJzdDpXZWxjb21lfX0=");}, // welcome template
     "welcomeIP": ()=> {return atob("e3tzdWJzdDp3ZWxjb21lLWFub259fQ==");}, // welcome IP template
@@ -231,7 +241,7 @@ function initwikiEdit() {
                 wikiEditor.config.lastVersion = wikiEditor.version; // update entry 
                 wikiEditor.info.writeConfig(true, ()=> { // update the config file
                     // Push an update toast
-                    wikiEditor.visuals.toast.show("RedWiki has been updated!", "MORE",
+                    wikiEditor.visuals.toast.show("RedWarn has been updated!", "MORE",
                     ()=>redirect("https://en.wikipedia.org/wiki/User:Ed6767/redwarn/bugsquasher", true), 7500);
                 });
             }
@@ -247,6 +257,17 @@ function initwikiEdit() {
                 }, 7500);
             } else if (window.location.hash.includes("#redirectLatestRevision")) {
                 wikiEditor.visuals.toast.show("Redirected to the lastest revision.");
+            } else if (window.location.hash.includes("#watchLatestRedirect")) {
+                // Redirected to latest by redirector, play sound
+                let src = 'https://raw.githubusercontent.com/ed6767/redwarn/master/redwarn%20notifs%20new%20edit.mp3';
+                let audio = new Audio(src);
+                audio.play();
+                // enable watcher
+                wikiEditor.info.changeWatch.toggle();
+            } else if (window.location.hash.includes("#investigateFail")) {
+                wikiEditor.visuals.toast.show("Investigation Failed. This text has not been modified in the past 500 revisions or originated when the page was created.", false, false, 10000);
+            } else if (window.location.hash.includes("#investigateIncomp")) {
+                wikiEditor.visuals.toast.show("The selection could not be investigated.", false, false, 10000);
             } else if (window.location.hash.includes("#configChange")) {
                 wikiEditor.visuals.toast.show("Preferences saved.");
             } else if (window.location.hash.includes("#compLatest")) {
