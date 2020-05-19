@@ -15,8 +15,8 @@ var mdlContainers = {
         
         // Themes
         let theme = "";
-        if (wikiEditor.config.colTheme){
-            theme = wikiEditor.config.colTheme;
+        if (rw.config.colTheme){
+            theme = rw.config.colTheme;
         } else {
             theme = "blue-indigo"; // default theme
         }

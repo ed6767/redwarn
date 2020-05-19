@@ -276,7 +276,7 @@ var onSettingsLoad = {};
         <section class="mdl-layout__tab-panel" id="scroll-tab-6">
         <div class="page-content">
             <!-- ABOUT TAB -->
-            <h2>RedWarn `+ wikiEditor.version +`</h2>
+            <h2>RedWarn `+ rw.version +`</h2>
             <h5>The user <span id="hahaFunnyJoke">friendly</span> edit patrol tool.</h5>
             <!-- Impliment very original and not outdated haha jokes -->
             <script>$("#hahaFunnyJoke").on("click", ()=> {Object.assign(document.createElement('a'), { target: '_blank', href: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"}).click();});</script>
@@ -314,7 +314,7 @@ var onSettingsLoad = {};
 
 <script>
     // CORE THINGS
-    var config = `+ JSON.stringify(wikiEditor.config) +`;
+    var config = `+ JSON.stringify(rw.config) +`;
     function saveConfig() {
         var data = $('form').serializeArray().reduce(function(obj, item) {
                 obj[item.name] = item.value;

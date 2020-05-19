@@ -4,22 +4,22 @@ if (mw.config.get("wgRelevantPageName").includes("User:") || mw.config.get("wgRe
     pageIconHTML += `
         <!-- BEGIN USER ONLY ICONS -->
         &nbsp;&nbsp;&nbsp;
-        <div id="newUsrMsg" class="icon material-icons"><span style="cursor: pointer;" onclick="wikiEditor.ui.newMsg();">send</span></div>
+        <div id="newUsrMsg" class="icon material-icons"><span style="cursor: pointer;" onclick="rw.ui.newMsg();">send</span></div>
         <div class="mdl-tooltip mdl-tooltip--large" for="newUsrMsg">
             New Message
         </div>
 
-        <div id="welcomeUsr" class="icon material-icons"><span style="cursor: pointer;" onclick="wikiEditor.info.quickWelcome();">sentiment_satisfied_alt</span></div>
+        <div id="welcomeUsr" class="icon material-icons"><span style="cursor: pointer;" onclick="rw.info.quickWelcome();">sentiment_satisfied_alt</span></div>
         <div class="mdl-tooltip mdl-tooltip--large" for="welcomeUsr">
             Quick Welcome
         </div>
 
-        <div id="warnUsr" class="icon material-icons"><span style="cursor: pointer;" onclick="wikiEditor.ui.beginWarn();">report</span></div>
+        <div id="warnUsr" class="icon material-icons"><span style="cursor: pointer;" onclick="rw.ui.beginWarn();">report</span></div>
         <div class="mdl-tooltip mdl-tooltip--large" for="warnUsr">
             Send Notice
         </div>
 
-        <div id="reportUsr" class="icon material-icons"><span style="cursor: pointer;" onclick="wikiEditor.ui.openAdminReport();">gavel</span></div>
+        <div id="reportUsr" class="icon material-icons"><span style="cursor: pointer;" onclick="rw.ui.openAdminReport();">gavel</span></div>
         <div class="mdl-tooltip mdl-tooltip--large" for="reportUsr">
             Report to Admin
         </div>
@@ -28,27 +28,27 @@ if (mw.config.get("wgRelevantPageName").includes("User:") || mw.config.get("wgRe
 pageIconHTML += `
     &nbsp;&nbsp;&nbsp;
     <!-- START PAGE ONLY ICONS -->
-    <div id="rwSpyIcon" class="icon material-icons"><span style="cursor: pointer;" onclick="wikiEditor.info.changeWatch.toggle();">notification_important</span></div>
+    <div id="rwSpyIcon" class="icon material-icons"><span style="cursor: pointer;" onclick="rw.info.changeWatch.toggle();">notification_important</span></div>
     <div class="mdl-tooltip mdl-tooltip--large" for="rwSpyIcon">
         Alert on Change
     </div>
 
-    <div id="rwInspectorLaunch" class="icon material-icons"><span style="cursor: pointer;" onclick="wikiEditor.visuals.toast.show('This feature is experimental and may not always work.');wikiEditor.whodunnit.mouseHighlighter();">find_in_page</span></div>
+    <div id="rwInspectorLaunch" class="icon material-icons"><span style="cursor: pointer;" onclick="rw.visuals.toast.show('This feature is experimental and may not always work.');rw.whodunnit.mouseHighlighter();">find_in_page</span></div>
     <div class="mdl-tooltip mdl-tooltip--large" for="rwInspectorLaunch">
         Inspector (alpha)
     </div>
     
-    <div id="mrevPg" class="icon material-icons"><span style="cursor: pointer;" onclick="wikiEditor.info.isLatestRevision(mw.config.get('wgRelevantPageName'), 0, ()=>{});">watch_later</span></div>
+    <div id="mrevPg" class="icon material-icons"><span style="cursor: pointer;" onclick="rw.info.isLatestRevision(mw.config.get('wgRelevantPageName'), 0, ()=>{});">watch_later</span></div>
     <div class="mdl-tooltip mdl-tooltip--large" for="mrevPg">
         Latest revision
     </div>
 
-    <div id="rwOpenPref" class="icon material-icons"><span style="cursor: pointer;" onclick="wikiEditor.ui.openPreferences();">settings</span></div>
+    <div id="rwOpenPref" class="icon material-icons"><span style="cursor: pointer;" onclick="rw.ui.openPreferences();">settings</span></div>
     <div class="mdl-tooltip mdl-tooltip--large" for="rwOpenPref">
         RedWarn Preferences
     </div>
 
-    <div id="rwFeedbackIco" class="icon material-icons"><span style="cursor: pointer;" onclick="wikiEditor.ui.sendFeedback();">contact_support</span></div>
+    <div id="rwFeedbackIco" class="icon material-icons"><span style="cursor: pointer;" onclick="rw.ui.sendFeedback();">contact_support</span></div>
     <div class="mdl-tooltip mdl-tooltip--large" for="rwFeedbackIco">
         RedWarn Feedback and Support
     </div>

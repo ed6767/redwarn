@@ -26,8 +26,8 @@ function redirect(url, inNewTab) {
     }
 }
 
-var wikiEditor = {
-    "version" : "rev10dev", // don't forget to change each version!
+var rw = {
+    "version" : "rev11", // don't forget to change each version!
     "sign": ()=>{return atob("fn5+fg==")}, // we have to do this because mediawiki will swap this out with devs sig.
     "welcome": ()=> {return atob("e3tzdWJzdDpXZWxjb21lfX0=");}, // welcome template
     "welcomeIP": ()=> {return atob("e3tzdWJzdDp3ZWxjb21lLWFub259fQ==");}, // welcome IP template
@@ -59,7 +59,7 @@ var wikiEditor = {
                 }
 
                 /* MDL */
-                `+ wikiEditorStyle +`
+                `+ rwStyle +`
                 </style>
             `); // Append required libaries to page
             // wait for load
@@ -78,7 +78,7 @@ var wikiEditor = {
                 /* [[[[include pageIcons.html]]]] */
 
                 // Possible icons locations: default (page icons area) or sidebar
-                let iconsLocation = wikiEditor.config.pgIconsLocation ? wikiEditor.config.pgIconsLocation : "default"; // If set in config, use config
+                let iconsLocation = rw.config.pgIconsLocation ? rw.config.pgIconsLocation : "default"; // If set in config, use config
                 if (iconsLocation == "default") {
                     try {
                         document.getElementsByClassName("mw-indicators mw-body-content")[0].innerHTML += pageIconHTML; // Append our icons to the page icons
@@ -134,18 +134,9 @@ var wikiEditor = {
 
             // Now register all icons
             for (let item of document.getElementsByClassName("mdl-tooltip")) {
-                wikiEditor.visuals.register(item); 
+                rw.visuals.register(item); 
             }
             // That's done :)
-        }
-    },
-    "alerts" : {
-        "accountNotPermitted" : () => {
-            // BEHAVIOR
-            // Shows toast for 15 seconds, shows dialog on click
-            wikiEditor.visuals.toast.show(`
-                To prevent vandalism, you cannot use this tool until you are a confirmed user. Come back later.
-                `, false, false, 15000);
         }
     },
 
@@ -155,9 +146,9 @@ var wikiEditor = {
             let sidebarSize = 500;
             let addCol = "0,255,0"; // rbg
             let rmCol = "255,0,0"; // rgb
-            if (wikiEditor.config.ptrSidebar) sidebarSize = wikiEditor.config.ptrSidebar; // If preferences set, apply them
-            if (wikiEditor.config.ptrAddCol) addCol = wikiEditor.config.ptrAddCol;
-            if (wikiEditor.config.ptrRmCol) rmCol = wikiEditor.config.ptrRmCol;
+            if (rw.config.ptrSidebar) sidebarSize = rw.config.ptrSidebar; // If preferences set, apply them
+            if (rw.config.ptrAddCol) addCol = rw.config.ptrAddCol;
+            if (rw.config.ptrRmCol) rmCol = rw.config.ptrRmCol;
             
             let url = URL.createObjectURL(new Blob([mdlContainers.generateHtml(`
             [[[[include recentChanges.html]]]]
@@ -170,17 +161,17 @@ var wikiEditor = {
                 if ($(el).parent().html().includes("#redwarn")) {
                     // Link already there.
                 } else {
-                    $(el).parent().prepend(`<a href='#redwarn' onclick='wikiEditor.ui.revisionBrowser("`+ el.href +`");'>Redwarn</a>  | `);
+                    $(el).parent().prepend(`<a href='#redwarn' onclick='rw.ui.revisionBrowser("`+ el.href +`");'>Redwarn</a>  | `);
                 }
             });
             window.addEventListener("focus", e=>{ 
-                wikiEditor.recentChanges.bindRecentChanges(); // fix chrome unfocus bug 
+                rw.recentChanges.bindRecentChanges(); // fix chrome unfocus bug 
             }, false);
-            wikiEditor.recentChanges.bindRecentChanges();
+            rw.recentChanges.bindRecentChanges();
         },
 
         "bindRecentChanges" : () => { // on list change add redwarn
-            $('body').on('DOMSubtreeModified', 'ul.special', ()=>wikiEditor.recentChanges.diffLinkAddRedWarn());
+            $('body').on('DOMSubtreeModified', 'ul.special', ()=>rw.recentChanges.diffLinkAddRedWarn());
         }
     }
 };
@@ -204,14 +195,14 @@ window.onmessage = function(e){
 };
 
 // init everthing
-function initwikiEdit() {
-    wikiEditor.visuals.init(()=>{
-        wikiEditor.visuals.toast.init();
+function initRW() {
+    rw.visuals.init(()=>{
+        rw.visuals.toast.init();
         dialogEngine.init();
-        wikiEditor.ui.registerContextMenu(); // register context menus
+        rw.ui.registerContextMenu(); // register context menus
 
         // Quick check we have perms to use (in confirmed/autoconfirmed group)
-        wikiEditor.info.featureRestrictPermissionLevel("confirmed", false, ()=>{
+        rw.info.featureRestrictPermissionLevel("confirmed", false, ()=>{
             // We don't have permission
             
             // Add red lock to the top right to show that RedWarn cannot be used
@@ -223,9 +214,9 @@ function initwikiEdit() {
             `;
             // Now register that
             for (let item of document.getElementsByClassName("mdl-tooltip")) {
-                wikiEditor.visuals.register(item); 
+                rw.visuals.register(item); 
             }
-            wikiEditor = {}; // WIPE OUT ENTIRE CLASS. We're not doing anything here.
+            rw = {}; // WIPE OUT ENTIRE CLASS. We're not doing anything here.
             // Notification
             mw.notify("Thank you for you interest in moderating Wikipedia. However, you do not have permission to use RedWarn. Please refer to the user guide for more information.");
             // That's it
@@ -234,14 +225,14 @@ function initwikiEdit() {
         // We have perms, let's continue.
 
         // Load config and check if updated
-        wikiEditor.info.getConfig(()=> {
-            wikiEditor.visuals.pageIcons(); // page icons once config loaded
-            if (wikiEditor.config.lastVersion != wikiEditor.version) {
+        rw.info.getConfig(()=> {
+            rw.visuals.pageIcons(); // page icons once config loaded
+            if (rw.config.lastVersion != rw.version) {
                 // We've had an update
-                wikiEditor.config.lastVersion = wikiEditor.version; // update entry 
-                wikiEditor.info.writeConfig(true, ()=> { // update the config file
+                rw.config.lastVersion = rw.version; // update entry 
+                rw.info.writeConfig(true, ()=> { // update the config file
                     // Push an update toast
-                    wikiEditor.visuals.toast.show("RedWarn has been updated!", "MORE",
+                    rw.visuals.toast.show("RedWarn has been updated!", "MORE",
                     ()=>redirect("https://en.wikipedia.org/wiki/User:Ed6767/redwarn/bugsquasher", true), 7500);
                 });
             }
@@ -250,29 +241,29 @@ function initwikiEdit() {
             if(window.location.hash.includes("#noticeApplied-")) {
                 // Show toast w undo edit capabilities
                 // #noticeApplied-currentEdit-pastEdit
-                wikiEditor.visuals.toast.show("Message saved", "UNDO", ()=>{
+                rw.visuals.toast.show("Message saved", "UNDO", ()=>{
                     // Redirect to undo page mw.config.get("wgRelevantPageName");
                     // TODO: maybe replace with custom page in future? 
                     window.location.href = "/w/index.php?title="+ mw.config.get("wgRelevantPageName") +"&action=edit&undoafter="+ window.location.hash.split("-")[2] +"&undo="+ window.location.hash.split("-")[1];
                 }, 7500);
             } else if (window.location.hash.includes("#redirectLatestRevision")) {
-                wikiEditor.visuals.toast.show("Redirected to the lastest revision.");
+                rw.visuals.toast.show("Redirected to the lastest revision.");
             } else if (window.location.hash.includes("#watchLatestRedirect")) {
                 // Redirected to latest by redirector, play sound
                 let src = 'https://raw.githubusercontent.com/ed6767/redwarn/master/redwarn%20notifs%20new%20edit.mp3';
                 let audio = new Audio(src);
                 audio.play();
                 // enable watcher
-                wikiEditor.info.changeWatch.toggle();
+                rw.info.changeWatch.toggle();
             } else if (window.location.hash.includes("#investigateFail")) {
-                wikiEditor.visuals.toast.show("Investigation Failed. This text has not been modified in the past 500 revisions or originated when the page was created.", false, false, 10000);
+                rw.visuals.toast.show("Investigation Failed. This text has not been modified in the past 500 revisions or originated when the page was created.", false, false, 10000);
             } else if (window.location.hash.includes("#investigateIncomp")) {
-                wikiEditor.visuals.toast.show("The selection could not be investigated.", false, false, 10000);
+                rw.visuals.toast.show("The selection could not be investigated.", false, false, 10000);
             } else if (window.location.hash.includes("#configChange")) {
-                wikiEditor.visuals.toast.show("Preferences saved.");
+                rw.visuals.toast.show("Preferences saved.");
             } else if (window.location.hash.includes("#compLatest")) {
                 // Go to the latest revison
-                wikiEditor.info.isLatestRevision(mw.config.get("wgRelevantPageName"), 0, ()=>{}); // auto filters and redirects for us - 0 is an ID that will never be
+                rw.info.isLatestRevision(mw.config.get("wgRelevantPageName"), 0, ()=>{}); // auto filters and redirects for us - 0 is an ID that will never be
             } else if (window.location.hash.includes("#rollbackPreview")) {
                 // Rollback preview iframe. NEEDS WORK. DON'T FORGET TO SET common.js back!!!
                 $('.mw-revslider-container').html(`
@@ -308,26 +299,26 @@ function initwikiEdit() {
                 
 
             } else if (window.location.hash.includes("#rollbackFailNoRev")) {
-                wikiEditor.visuals.toast.show("Could not rollback as there were no recent revisions by other users. Use the history page to try and manually revert.", false, false, 15000);
+                rw.visuals.toast.show("Could not rollback as there were no recent revisions by other users. Use the history page to try and manually revert.", false, false, 15000);
             }
             
             if (window.location.href.includes("&diff=") && window.location.href.includes("&oldid=")) {
                 // Diff page
-                wikiEditor.rollback.loadIcons(); // load rollback icons
+                rw.rollback.loadIcons(); // load rollback icons
             } else if (window.location.href.includes("/wiki/Special:RecentChanges")) {
                 // Recent changes page
                 // Add redwarn btn
                 $(".mw-rcfilters-ui-filterWrapperWidget-bottom").prepend(`
-                <div id="openRWP" class="icon material-icons"><span style="cursor: pointer;" onclick="wikiEditor.recentChanges.openPage(window.location.search.substr(1));">how_to_reg</span></div>
+                <div id="openRWP" class="icon material-icons"><span style="cursor: pointer;" onclick="rw.recentChanges.openPage(window.location.search.substr(1));">how_to_reg</span></div>
                 <div class="mdl-tooltip mdl-tooltip--large" for="openRWP">
                     Launch RedWarn Patrol with these filters
                 </div>
                 `); // Register tooltip
                 for (let item of document.getElementsByClassName("mdl-tooltip")) {
-                    wikiEditor.visuals.register(item); 
+                    rw.visuals.register(item); 
                 }
 
-                wikiEditor.recentChanges.diffLinkAddRedWarn(); // Add redwarn to all links
+                rw.recentChanges.diffLinkAddRedWarn(); // Add redwarn to all links
             }
         }); 
     });

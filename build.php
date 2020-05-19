@@ -22,7 +22,7 @@ function buildScript() {
     $( document ).ready( function () {
         // Init when page loaded
       try {
-        initwikiEdit();
+        initRW();
       } catch (err) {
         mw.notify("Sorry, an error occured while loading RedWarn.");
         console.error(err);

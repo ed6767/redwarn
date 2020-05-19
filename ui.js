@@ -1,6 +1,6 @@
 // Most UI elements
 // See also dialog.js (dialogEngine) and mdlContainer.js (mdlContainer)
-wikiEditor.ui = {
+rw.ui = {
 
     "revisionBrowser" : url=> {
         // Show new container for revision reviewing
@@ -19,9 +19,9 @@ wikiEditor.ui = {
 
     "beginWarn" : (ignoreWarnings, un, pg)=> {
         // Give user a warning (show dialog)
-        if ((wikiEditor.info.targetUsername(un) == wikiEditor.info.getUsername()) && !ignoreWarnings) {
+        if ((rw.info.targetUsername(un) == rw.info.getUsername()) && !ignoreWarnings) {
             // Usernames are the same, give toast.
-            wikiEditor.visuals.toast.show("You can not warn yourself. To test this tool, use a sandbox.", false, false, 7500);
+            rw.visuals.toast.show("You can not warn yourself. To test this tool, use a sandbox.", false, false, 7500);
             return; // DO NOT continue.
         }
 
@@ -38,7 +38,7 @@ wikiEditor.ui = {
 
         // Setup preview handling
         addMessageHandler("generatePreview`*", m=>{
-            wikiEditor.info.parseWikitext(m.split("`")[1], parsed=>{ // Split to Wikitext and send over to the API to be handled
+            rw.info.parseWikitext(m.split("`")[1], parsed=>{ // Split to Wikitext and send over to the API to be handled
                 dialogEngine.dialog.getElementsByTagName("iframe")[0].contentWindow.postMessage({
                     "action": "parseWikiTxt",
                     "result": parsed}, '*'); // push to container for handling in dialog and add https:// to stop image breaking
@@ -46,10 +46,10 @@ wikiEditor.ui = {
         });
 
         // Add toast handler
-        addMessageHandler("pushToast`*", m=>wikiEditor.visuals.toast.show(m.split('`')[1],false,false, 5000));
+        addMessageHandler("pushToast`*", m=>rw.visuals.toast.show(m.split('`')[1],false,false, 5000));
 
         // Add admin report handler
-        addMessageHandler("adminR", ()=>wikiEditor.ui.openAdminReport(un));
+        addMessageHandler("adminR", ()=>rw.ui.openAdminReport(un));
 
         // Add submit handler
 
@@ -62,12 +62,12 @@ wikiEditor.ui = {
             let summary = _eD[3];
 
             // MAKE EDIT
-            wikiEditor.info.addWikiTextToUserPage(user, wikiTxt, true, summary);
+            rw.info.addWikiTextToUserPage(user, wikiTxt, true, summary);
         });
 
         // Check most recent warning level
 
-        wikiEditor.info.lastWarningLevel(wikiEditor.info.targetUsername(un), (w, usrPgMonth, userPg)=>{
+        rw.info.lastWarningLevel(rw.info.targetUsername(un), (w, usrPgMonth, userPg)=>{
             let lastWarning = [ // Return HTML for last warning level.
                 // NO PAST WARNING
                 `
@@ -132,7 +132,7 @@ wikiEditor.ui = {
         // New message dialog
         // Setup preview handling
         addMessageHandler("generatePreview`*", m=>{
-            wikiEditor.info.parseWikitext(m.split("`")[1], parsed=>{ // Split to Wikitext and send over to the API to be handled
+            rw.info.parseWikitext(m.split("`")[1], parsed=>{ // Split to Wikitext and send over to the API to be handled
                 dialogEngine.dialog.getElementsByTagName("iframe")[0].contentWindow.postMessage({
                     "action": "parseWikiTxt",
                     "result": parsed}, '*'); // push to container for handling in dialog and add https:// to stop image breaking
@@ -140,7 +140,7 @@ wikiEditor.ui = {
         });
 
         // Add toast handler
-        addMessageHandler("pushToast`*", m=>wikiEditor.visuals.toast.show(m.split('`')[1],false,false,15000));
+        addMessageHandler("pushToast`*", m=>rw.visuals.toast.show(m.split('`')[1],false,false,15000));
 
         // Add submit handler
 
@@ -153,7 +153,7 @@ wikiEditor.ui = {
             let summary = _eD[3];
 
             // MAKE EDIT
-            wikiEditor.info.addWikiTextToUserPage(user, wikiTxt, false, summary); // This requires title.
+            rw.info.addWikiTextToUserPage(user, wikiTxt, false, summary); // This requires title.
         });
 
         // CREATE DIALOG
@@ -204,23 +204,23 @@ wikiEditor.ui = {
 
                         "accInfo" : un=>redirect("https://en.wikipedia.org/wiki/Special:CentralAuth?target="+ un, true),  // Redirect to Special:CentralAuth page in new tab
 
-                        "sendMsg" : un=>wikiEditor.ui.newMsg(un), // show new msg dialog
+                        "sendMsg" : un=>rw.ui.newMsg(un), // show new msg dialog
 
-                        "quickWel" : un=>wikiEditor.info.quickWelcome(un), // Submit quick welcome
+                        "quickWel" : un=>rw.info.quickWelcome(un), // Submit quick welcome
 
-                        "newNotice" : un=>wikiEditor.ui.beginWarn(false, un), // show new warning dialog
+                        "newNotice" : un=>rw.ui.beginWarn(false, un), // show new warning dialog
 
-                        "adminReport" : un=>wikiEditor.ui.openAdminReport(un),
+                        "adminReport" : un=>rw.ui.openAdminReport(un),
 
                         "usrPronouns": un=>{ // Show a tost with this users prefered pronouns
-                            wikiEditor.info.getUserPronouns(un, p=>{
-                                wikiEditor.visuals.toast.show(un + "'s pronouns are "+ p, false, false, 3000);
+                            rw.info.getUserPronouns(un, p=>{
+                                rw.visuals.toast.show(un + "'s pronouns are "+ p, false, false, 3000);
                             });
                         },
 
                         "usrEditCount": un=>{ // Show a tost with this users prefered pronouns
-                            wikiEditor.info.getUserEditCount(un, count=>{
-                                wikiEditor.visuals.toast.show(un + " has made "+ count + " edits.", false, false, 3000);
+                            rw.info.getUserEditCount(un, count=>{
+                                rw.visuals.toast.show(un + " has made "+ count + " edits.", false, false, 3000);
                             });
                         }
 
@@ -249,7 +249,7 @@ wikiEditor.ui = {
 
 
         // VOID NOTICE CONTEXT MENU (extendedconfirmed ONLY)
-        wikiEditor.info.featureRestrictPermissionLevel("extendedconfirmed", ()=>$(()=>{
+        rw.info.featureRestrictPermissionLevel("extendedconfirmed", ()=>$(()=>{
             $.contextMenu({
                 selector: 'p:has(a[href*="wiki/File:Stop_hand_nuvola.svg"]), p:has(a[href*="wiki/File:Information_orange.svg"]), p:has(a[href*="wiki/File:Information.svg"]), p:has(a[href*="wiki/File:Nuvola_apps_important.svg"])', // Select all appropriate paragraphs containing a notice
                 callback: (act, info)=>{
@@ -257,7 +257,7 @@ wikiEditor.ui = {
                     let textToMatch = $(info.$trigger[0]).text(); // Text to match w api
                     if (!$(info.$trigger[0]).html().includes("/wiki/User_talk:")) { // No sig. Likely multi-line
                         // We can't void this as it is multi-line. Maybe something to add in future?
-                        wikiEditor.visuals.toast.show("This type of notice can't be automatically voided. You will need to remove this notice manually.", false, false, 7500);
+                        rw.visuals.toast.show("This type of notice can't be automatically voided. You will need to remove this notice manually.", false, false, 7500);
                         return; //exit
                     }
                     
@@ -268,11 +268,11 @@ wikiEditor.ui = {
                         // Check if exists
                         
                         if (latestR.query.pages[0].missing) { // If page doesn't exist, error because something defo went wrong
-                            wikiEditor.visuals.toast.show("The notice could not be automatically removed due to an error.", false, false, 5000);
+                            rw.visuals.toast.show("The notice could not be automatically removed due to an error.", false, false, 5000);
                             return; // exit
                         }
 
-                        wikiEditor.visuals.toast.show("Please wait...", false, false, 2000);
+                        rw.visuals.toast.show("Please wait...", false, false, 2000);
                         let revisionWikitext = latestR.query.pages[0].revisions[0].slots.main.content;
                         let wikiTxtLines = revisionWikitext.split("\n");
                         // let's continue
@@ -280,18 +280,18 @@ wikiEditor.ui = {
                         let hasBeenMatched = false;
                         let finalStr = "";
                         wikiTxtLines.forEach((element, i) => {
-                            let compStr = wikiEditor.info.stripWikiTxt(element);
+                            let compStr = rw.info.stripWikiTxt(element);
                             if (compStr.toLowerCase().includes(textToMatch.toLowerCase().trim())) {
                                 // Match! Don't add this one normally. Add our sig and that it is now void. MUST REMOVE PIC (as the textTomatch did) in order to stop Redwarn showing as warning still
                                 hasBeenMatched = true;
-                                finalStr += "{{strikethrough|" + textToMatch + "}}<br>'''The above notice was placed in error and is now void.''' " + wikiEditor.sign() + " \n";
+                                finalStr += "{{strikethrough|" + textToMatch + "}}<br>'''The above notice was placed in error and is now void.''' " + rw.sign() + " \n";
                             } else {
                                 finalStr += element + "\n";
                             }
                         });
                         if (!hasBeenMatched) {
                             // For whatever reason, we cannot remove this, no match.
-                            wikiEditor.visuals.toast.show("This type of notice can't be automatically voided. You will need to remove this notice manually.", false, false, 7500);
+                            rw.visuals.toast.show("This type of notice can't be automatically voided. You will need to remove this notice manually.", false, false, 7500);
                             return; //exit
                         }
 
@@ -308,7 +308,7 @@ wikiEditor.ui = {
                             if (!dt.edit) {
                                 // Error occured or other issue
                                 console.error(dt);
-                                wikiEditor.visuals.toast.show("Sorry, there was an error. This notice has not been voided.");
+                                rw.visuals.toast.show("Sorry, there was an error. This notice has not been voided.");
                             } else {
                                 // Success! Redirect to complete page
                                 window.location.hash = "#noticeApplied-" + dt.edit.newrevid + "-" + dt.edit.oldrevid; 
@@ -335,7 +335,7 @@ wikiEditor.ui = {
                     // Do the action for each action now.
 
                     ({
-                        "rbTestEdits" : ()=>wikiEditor.rollback.apply('test edit.')  // Submit quick rollback
+                        "rbTestEdits" : ()=>rw.rollback.apply('test edit.')  // Submit quick rollback
                     })[act]();
                     
                 },
@@ -355,7 +355,7 @@ wikiEditor.ui = {
         // Open Speedy Deletion dialog for first selection, i.e I'm requesting the speedy deletion of..
         // Programming this is proving to be very boring.
         // Add toast handler
-        addMessageHandler("pushToast`*", m=>wikiEditor.visuals.toast.show(m.split('`')[1],false,false,15000));
+        addMessageHandler("pushToast`*", m=>rw.visuals.toast.show(m.split('`')[1],false,false,15000));
 
         addMessageHandler("csdR`*", rs=>{
             // Reason recieved.
@@ -396,7 +396,7 @@ wikiEditor.ui = {
 
     "openPreferences" : () => { // Open Preferences page
         // Add toast handler
-        addMessageHandler("pushToast`*", m=>wikiEditor.visuals.toast.show(m.split('`')[1],false,false,15000));
+        addMessageHandler("pushToast`*", m=>rw.visuals.toast.show(m.split('`')[1],false,false,15000));
 
         addMessageHandler("config`*", rs=>{ // On config change
             // New config recieved
@@ -405,17 +405,17 @@ wikiEditor.ui = {
             for (const key in config) {
                 if (config.hasOwnProperty(key)) {
                     const element = config[key];
-                    wikiEditor.config[key] = element; // add or change value
+                    rw.config[key] = element; // add or change value
                 }
             }
 
             // Push change
-            wikiEditor.info.writeConfig();
+            rw.info.writeConfig();
         }); 
 
         addMessageHandler("resetConfig", rs=>{
             // Reset config recieved, set config back to default
-            wikiEditor.info.getConfig(()=>{}, true); // TRUE HERE MEANS RESET TO DEAULT
+            rw.info.getConfig(()=>{}, true); // TRUE HERE MEANS RESET TO DEAULT
         });
         // Open preferences page with no padding, full screen
         dialogEngine.create(mdlContainers.generateContainer(`
@@ -425,16 +425,16 @@ wikiEditor.ui = {
 
     "openAdminReport" : (un)=> { // Open admin report dialog
         // Add toast handler
-        addMessageHandler("pushToast`*", m=>wikiEditor.visuals.toast.show(m.split('`')[1],false,false,2500));
+        addMessageHandler("pushToast`*", m=>rw.visuals.toast.show(m.split('`')[1],false,false,2500));
 
         // On report
         addMessageHandler("report`*", m=>{
             let reportContent = m.split('`')[1]; // report content
             let target = m.split('`')[2]; // target username
-            let targetIsIP = wikiEditor.info.isUserAnon(target); // is the target an IP? (2 different types of reports)
+            let targetIsIP = rw.info.isUserAnon(target); // is the target an IP? (2 different types of reports)
             console.log("reporting "+ target + ": "+ reportContent);
             console.log("is ip? "+ (targetIsIP ? "yes" : "no"));
-            wikiEditor.visuals.toast.show("Reporting "+ target +"...", false, false, 2000); // show toast
+            rw.visuals.toast.show("Reporting "+ target +"...", false, false, 2000); // show toast
             // Submit the report. MUST REPLACE WITH REAL AIV WHEN DONE AND WITH SANDBOX IN DEV!    
             //let aivPage = "User:Ed6767/sandbox"; // dev
             let aivPage = "Wikipedia:Administrator_intervention_against_vandalism"; // PRODUCTION! 
@@ -444,7 +444,7 @@ wikiEditor.ui = {
                 // Check if exists
                 let revisionWikitext =  latestR.query.pages[0].revisions[0].slots.main.content; // Set wikitext
                 if (revisionWikitext.toLowerCase().includes(target.toLowerCase())) {// If report is already there
-                    wikiEditor.visuals.toast.show("This user has already been reported.", false, false, 5000); // show already reported toast
+                    rw.visuals.toast.show("This user has already been reported.", false, false, 5000); // show already reported toast
                     return; // Exit
                 }
 
@@ -466,19 +466,19 @@ wikiEditor.ui = {
                         // Error occured or other issue
                         console.error(dt);
                         dialogEngine.dialog.showModal(); // reshow dialog
-                        wikiEditor.visuals.toast.show("Sorry, there was an error, likely an edit conflict. Try reporting again."); // That's it
+                        rw.visuals.toast.show("Sorry, there was an error, likely an edit conflict. Try reporting again."); // That's it
                     } else {
                         // Success! No need to do anything else.
-                        wikiEditor.visuals.toast.show("User reported.", false, false, 5000); // we done
+                        rw.visuals.toast.show("User reported.", false, false, 5000); // we done
                     }
                 });
             });
         }); // END ON REPORT EVENT
 
         // Check matching user
-        if (wikiEditor.info.targetUsername(un) == wikiEditor.info.getUsername()) {
+        if (rw.info.targetUsername(un) == rw.info.getUsername()) {
             // Usernames are the same, give toast.
-            wikiEditor.visuals.toast.show("You can not report yourself, nor can you test this feature except in a genuine case.", false, false, 7500);
+            rw.visuals.toast.show("You can not report yourself, nor can you test this feature except in a genuine case.", false, false, 7500);
             return; // DO NOT continue.
         }
 
@@ -493,46 +493,46 @@ wikiEditor.ui = {
         // Loading dialog
         "hasInit" : false, 
         "init" : text=> {
-            if (!wikiEditor.ui.loadDialog.hasInit) { // Only continue if we haven't already appended our container div
+            if (!rw.ui.loadDialog.hasInit) { // Only continue if we haven't already appended our container div
                 $("body").append(`
-                <div id="wikiEditorUILoad">
+                <div id="rwUILoad">
                 </div>
                 `);
-                $("#wikiEditorUILoad").html(`
-                <dialog class="mdl-dialog" id="wikiEditorUILoadDialog">
+                $("#rwUILoad").html(`
+                <dialog class="mdl-dialog" id="rwUILoadDialog">
                     ` + mdlContainers.generateContainer(`[[[[include loadingSpinner.html]]]]`, 300, 30) +`
                 </dialog>
                 `); // Create dialog with content from loadingSpinner.html
 
-                wikiEditor.ui.loadDialog.dialog = document.querySelector('#wikiEditorUILoadDialog'); // set dialog var
+                rw.ui.loadDialog.dialog = document.querySelector('#rwUILoadDialog'); // set dialog var
 
                 // Firefox issue fix
-                if (! wikiEditor.ui.loadDialog.dialog.showModal) {
-                    dialogPolyfill.registerDialog(wikiEditor.ui.loadDialog.dialog);
+                if (! rw.ui.loadDialog.dialog.showModal) {
+                    dialogPolyfill.registerDialog(rw.ui.loadDialog.dialog);
                 }
 
-                wikiEditor.ui.loadDialog.hasInit = true;
+                rw.ui.loadDialog.hasInit = true;
             }
         },
 
         "show" : text=> { // Init and create a new loading dialog
-            wikiEditor.ui.loadDialog.init(text); // init
-            wikiEditor.ui.loadDialog.setText(text); // set our text
+            rw.ui.loadDialog.init(text); // init
+            rw.ui.loadDialog.setText(text); // set our text
             // Show dialog
-            wikiEditor.ui.loadDialog.dialog.showModal();
+            rw.ui.loadDialog.dialog.showModal();
             // We done
         },
 
-        "setText" : text=> $("#wikiEditorUILoadDialog > iframe")[0].contentWindow.postMessage(text, '*'), // Set text of loading by just sending the message to the container
+        "setText" : text=> $("#rwUILoadDialog > iframe")[0].contentWindow.postMessage(text, '*'), // Set text of loading by just sending the message to the container
 
-        "close": ()=>wikiEditor.ui.loadDialog.dialog.close() // Close the dialog
+        "close": ()=>rw.ui.loadDialog.dialog.close() // Close the dialog
     },
 
     "sendFeedback" : ()=> {
         // Open feedback dialog, basically same as newmsg
         // Setup preview handling
         addMessageHandler("generatePreview`*", m=>{
-            wikiEditor.info.parseWikitext(m.split("`")[1], parsed=>{ // Split to Wikitext and send over to the API to be handled
+            rw.info.parseWikitext(m.split("`")[1], parsed=>{ // Split to Wikitext and send over to the API to be handled
                 dialogEngine.dialog.getElementsByTagName("iframe")[0].contentWindow.postMessage({
                     "action": "parseWikiTxt",
                     "result": parsed}, '*'); // push to container for handling in dialog and add https:// to stop image breaking
@@ -540,7 +540,7 @@ wikiEditor.ui = {
         });
 
         // Add toast handler
-        addMessageHandler("pushToast`*", m=>wikiEditor.visuals.toast.show(m.split('`')[1],false,false,15000));
+        addMessageHandler("pushToast`*", m=>rw.visuals.toast.show(m.split('`')[1],false,false,15000));
 
         // Add submit handler
 
@@ -552,7 +552,7 @@ wikiEditor.ui = {
             let wikiTxt = _eD[2];
             let summary = _eD[3];
             // MAKE EDIT
-            wikiEditor.info.addWikiTextToUserPage(user, wikiTxt, true, summary); // Save under date
+            rw.info.addWikiTextToUserPage(user, wikiTxt, true, summary); // Save under date
         });
 
         // CREATE DIALOG

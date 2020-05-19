@@ -11,7 +11,7 @@
 <h2 style="font-weight: 200;font-size:45px;line-height: 48px;">Compose New Message</h2>
 <form id="newMsgForm">
     <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width:100%">
-        <input class="mdl-textfield__input" type="text" id="trgtUsrVisualBox" value="`+ wikiEditor.info.targetUsername(un) +`" readonly>
+        <input class="mdl-textfield__input" type="text" id="trgtUsrVisualBox" value="`+ rw.info.targetUsername(un) +`" readonly>
         <label class="mdl-textfield__label" for="trgtUsrVisualBox">Target</label>
         <div class="mdl-tooltip" for="trgtUsrVisualBox">
             To target a different user, please visit their userpage.
@@ -36,7 +36,7 @@
     <div id="editor">
         <textarea id="wikiTxt" name="wikiTxt" style="height: 150px; max-height: 150px; overflow-y: auto; width:100%;">
 == Your Message Title ==
-Your message here. `+ wikiEditor.sign() +`
+Your message here. `+ rw.sign() +`
         </textarea>
     </div> <!-- Used to edit Wikitext -->
 </span>
@@ -63,7 +63,7 @@ Your message here. `+ wikiEditor.sign() +`
 
     function grabPreview() {
         var wikiTxt = document.getElementById("wikiTxt").value;
-        if (!wikiTxt.includes("`+ wikiEditor.sign() +`")) {
+        if (!wikiTxt.includes("`+ rw.sign() +`")) {
             // Not signed, warn
             pushToast("Don't forget to sign your message!");
         }
@@ -78,9 +78,9 @@ Your message here. `+ wikiEditor.sign() +`
                 }, {}); // form data
 
         var wikiTxt = data.wikiTxt;
-        if (!wikiTxt.includes("`+ wikiEditor.sign() +`")) {
+        if (!wikiTxt.includes("`+ rw.sign() +`")) {
             // Not signed, warn
-            pushToast("Sign your message with '`+ wikiEditor.sign() +`'");
+            pushToast("Sign your message with '`+ rw.sign() +`'");
             return; // Do not continue
         }
         window.parent.postMessage('applyNotice\\\`' + document.getElementById("trgtUsrVisualBox").value + '\\\`' + wikiTxt + '\\\`' + "New message"); // Push upstairs and commit

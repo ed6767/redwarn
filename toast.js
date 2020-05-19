@@ -3,22 +3,22 @@
 
 /*
     EXAMPLE SYNTAX:
-    Required somewhere: wikiEditor.visuals.toast.init();
+    Required somewhere: rw.visuals.toast.init();
     Then:
-    (for no button) wikiEditor.visuals.toast.show("Text", false, false, 2000);
-    (for button) wikiEditor.visuals.toast.show("Text", "BtnTxt", function() {
+    (for no button) rw.visuals.toast.show("Text", false, false, 2000);
+    (for button) rw.visuals.toast.show("Text", "BtnTxt", function() {
         // your code here
     }, 5000);
 */
 
-wikiEditor.visuals.toast = {
+rw.visuals.toast = {
     
     "active" : false,
 
     "init" : function(){
-        if (!wikiEditor.visuals.toast.active) { // If init already done, no need
+        if (!rw.visuals.toast.active) { // If init already done, no need
             $('body').append(`
-                <div id="wikiEditor-toast" class="mdl-js-snackbar mdl-snackbar">
+                <div id="rw-toast" class="mdl-js-snackbar mdl-snackbar">
                 <div class="mdl-snackbar__text"></div>
                 <button class="mdl-snackbar__action" type="button"></button>
                 </div>
@@ -26,11 +26,11 @@ wikiEditor.visuals.toast = {
             (function() {
                 'use strict';
                 window['counter'] = 0;
-                var toast = document.querySelector('#wikiEditor-toast');
-                wikiEditor.visuals.register(toast); // register comp
+                var toast = document.querySelector('#rw-toast');
+                rw.visuals.register(toast); // register comp
 
                 // create function
-                wikiEditor.visuals.toast.show = (text, buttonTxt, btnClick, tOut) => {
+                rw.visuals.toast.show = (text, buttonTxt, btnClick, tOut) => {
                     'use strict';
                     if (buttonTxt) {
                         // Show with action and button
@@ -43,7 +43,7 @@ wikiEditor.visuals.toast = {
                 }());
 
             // Init done. Register.
-            wikiEditor.visuals.toast.active = true;
+            rw.visuals.toast.active = true;
         }
     },
 

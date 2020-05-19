@@ -1,5 +1,5 @@
 // API calls ext.
-wikiEditor.info = { // API
+rw.info = { // API
     "targetUsername": un=>{
         if (un) {return un;} // return username if defined
         return mw.config.values.wgRelevantUserName},
@@ -14,16 +14,16 @@ wikiEditor.info = { // API
     "getConfig": (callback, resetToDefault) => { // IF RESETTODEFAULT IS TRUE IT WILL DO IT
         
         let defaultConfig = { // Default config on reset or anything like that
-            "lastVersion" : wikiEditor.version
+            "lastVersion" : rw.version
         };
 
-        if (resetToDefault) {wikiEditor.config = defaultConfig; wikiEditor.info.writeConfig(); return;} // If reset to default, do it
+        if (resetToDefault) {rw.config = defaultConfig; rw.info.writeConfig(); return;} // If reset to default, do it
 
-        if (wikiEditor.config) {callback();} // if config loaded, no need to reload
+        if (rw.config) {callback();} // if config loaded, no need to reload
 
 
         // gets user config from their page. 
-        let user = wikiEditor.info.getUsername();
+        let user = rw.info.getUsername();
         $.getJSON("https://en.wikipedia.org/w/api.php?action=query&prop=revisions&titles=User:"+user+"/redwarnConfig.js&rvslots=*&rvprop=content&formatversion=2&format=json", latestR=>{
             // Grab text from latest revision of talk page
             // Check if exists
@@ -33,19 +33,19 @@ wikiEditor.info = { // API
             } else {
                 // Config doesn't exist  we need to make it
                 console.log("creating config file");
-                wikiEditor.config = defaultConfig;
-                wikiEditor.info.writeConfig(callback); // write new config file
+                rw.config = defaultConfig;
+                rw.info.writeConfig(callback); // write new config file
                 return;
             }
 
             // Now that's done, verify config file / load it
             try {
                 eval(revisionWikitext);
-                if (!wikiEditor.config) {throw "no config";}
+                if (!rw.config) {throw "no config";}
             } catch (err) {
                 // Corrupt config file
-                wikiEditor.config = defaultConfig;
-                wikiEditor.visuals.toast.show("Your config file is corrupt.");
+                rw.config = defaultConfig;
+                rw.visuals.toast.show("Your config file is corrupt.");
             }
             callback(); // we done
         });
@@ -68,12 +68,12 @@ wikiEditor.info = { // API
 +-----------------------------------------+
 
 */
-wikiEditor.config = `+ JSON.stringify(wikiEditor.config) +"; //</nowiki>"; // generate config text
+rw.config = `+ JSON.stringify(rw.config) +"; //</nowiki>"; // generate config text
         $.post("https://en.wikipedia.org/w/api.php", {
                 "action": "edit",
                 "format": "json",
                 "token" : mw.user.tokens.get("csrfToken"),
-                "title" : "User:"+ wikiEditor.info.getUsername() + "/redwarnConfig.js",
+                "title" : "User:"+ rw.info.getUsername() + "/redwarnConfig.js",
                 "summary" : "Apply changes to config [[WP:REDWARN|(RedWarn)]]", // summary sign here
                 "text": finalTxt
             }).done(dt => {
@@ -81,7 +81,7 @@ wikiEditor.config = `+ JSON.stringify(wikiEditor.config) +"; //</nowiki>"; // ge
                 if (!dt.edit) {
                     // Error occured or other issue
                     console.error(dt);
-                    wikiEditor.visuals.toast.show("Sorry, there was an error. See the console for more info. Your changes have not been saved.");
+                    rw.visuals.toast.show("Sorry, there was an error. See the console for more info. Your changes have not been saved.");
                 } else {
                     // Success!
                     if (noRedirect) {callback(); return;}; // DO NOT continue if no redirect is requested
@@ -107,7 +107,7 @@ wikiEditor.config = `+ JSON.stringify(wikiEditor.config) +"; //</nowiki>"; // ge
                     callbackIfNot();
                 } else {
                     // Show no perm toast
-                    wikiEditor.visuals.toast.show("Your account doesn't have permission to do that yet.", false, false, 5000);
+                    rw.visuals.toast.show("Your account doesn't have permission to do that yet.", false, false, 5000);
                 }
             }
         });
@@ -207,7 +207,7 @@ wikiEditor.config = `+ JSON.stringify(wikiEditor.config) +"; //</nowiki>"; // ge
     },// End lastWarningLevel
 
     "addWikiTextToUserPage" : (user, text, underDate, summary, blacklist, blacklistToast) => {
-        wikiEditor.ui.loadDialog.show("Saving message...");
+        rw.ui.loadDialog.show("Saving message...");
         // Add text to a page. If underdate true, add it under a date marker
         $.getJSON("https://en.wikipedia.org/w/api.php?action=query&prop=revisions&titles=User_talk:"+user+"&rvslots=*&rvprop=content&formatversion=2&format=json", latestR=>{
             // Grab text from latest revision of talk page
@@ -223,8 +223,8 @@ wikiEditor.config = `+ JSON.stringify(wikiEditor.config) +"; //</nowiki>"; // ge
             if (blacklist) {
                 if (revisionWikitext.includes(blacklist)) {
                     // Don't continue and show toast
-                    wikiEditor.ui.loadDialog.close();
-                    wikiEditor.visuals.toast.show(blacklistToast, false, false, 5000);
+                    rw.ui.loadDialog.close();
+                    rw.visuals.toast.show(blacklistToast, false, false, 5000);
                     return;
                 }
             }
@@ -286,8 +286,8 @@ wikiEditor.config = `+ JSON.stringify(wikiEditor.config) +"; //</nowiki>"; // ge
                 if (!dt.edit) {
                     // Error occured or other issue
                     console.error(dt);
-                    wikiEditor.ui.loadDialog.close();
-                    wikiEditor.visuals.toast.show("Sorry, there was an error. See the console for more info. Your message has not been sent.");
+                    rw.ui.loadDialog.close();
+                    rw.visuals.toast.show("Sorry, there was an error. See the console for more info. Your message has not been sent.");
                     // Reshow dialog
                     dialogEngine.dialog.showModal();
                 } else {
@@ -304,12 +304,12 @@ wikiEditor.config = `+ JSON.stringify(wikiEditor.config) +"; //</nowiki>"; // ge
     "quickWelcome" : un=>{
         // Quickly welcome the current user
         // Check if registered or unregistered user
-        if (wikiEditor.info.isUserAnon(wikiEditor.info.targetUsername(un))) {
+        if (rw.info.isUserAnon(rw.info.targetUsername(un))) {
             // IP Editor - send IP welcome
-            wikiEditor.info.addWikiTextToUserPage(wikiEditor.info.targetUsername(un), "\n"+ wikiEditor.welcomeIP() +" " + wikiEditor.sign() +"\n", false, "Welcome! (IP)");
+            rw.info.addWikiTextToUserPage(rw.info.targetUsername(un), "\n"+ rw.welcomeIP() +" " + rw.sign() +"\n", false, "Welcome! (IP)");
         } else {
             // Registered user
-            wikiEditor.info.addWikiTextToUserPage(wikiEditor.info.targetUsername(un), "\n"+ wikiEditor.welcome() +" " + wikiEditor.sign() +"\n", false, "Welcome!");
+            rw.info.addWikiTextToUserPage(rw.info.targetUsername(un), "\n"+ rw.welcome() +" " + rw.sign() +"\n", false, "Welcome!");
         }
     },
 
@@ -323,7 +323,7 @@ wikiEditor.config = `+ JSON.stringify(wikiEditor.config) +"; //</nowiki>"; // ge
             let latestUsername = r.query.pages[0].revisions[0].user;
             if (latestRId == revID) {
                 // Yup! Send the callback
-                callback(latestUsername);
+                callback(latestUsername, latestRId);
             } else {
                 // Nope :(
                 // Load the preview page of the latest one
@@ -401,25 +401,25 @@ wikiEditor.config = `+ JSON.stringify(wikiEditor.config) +"; //</nowiki>"; // ge
         "timecheck" : "",
         "lastRevID": "",
         "toggle" : ()=> {
-            if (!wikiEditor.info.changeWatch.active) {
+            if (!rw.info.changeWatch.active) {
                 // We're not active, make UI changes
                 // Request notification perms
                 if (Notification.permission !== 'granted') Notification.requestPermission();
 
                 $("#rwSpyIcon").css("color", "green");
-                wikiEditor.visuals.toast.show("Alerts Enabled - please keep this tab open.");
-                wikiEditor.info.changeWatch.active = true;
+                rw.visuals.toast.show("Alerts Enabled - please keep this tab open.");
+                rw.info.changeWatch.active = true;
 
                 // Get latest rev id
                 $.getJSON("https://en.wikipedia.org/w/api.php?action=query&prop=revisions&titles="+ encodeURIComponent(mw.config.get("wgRelevantPageName")) +"&rvslots=*&rvprop=ids&formatversion=2&format=json", r=>{
                     // We got the response, set our ID
-                    wikiEditor.info.changeWatch.lastRevID = r.query.pages[0].revisions[0].revid;
-                    wikiEditor.info.changeWatch.timecheck = setInterval(()=>{ // Check for new revision every 5 seconds
+                    rw.info.changeWatch.lastRevID = r.query.pages[0].revisions[0].revid;
+                    rw.info.changeWatch.timecheck = setInterval(()=>{ // Check for new revision every 5 seconds
                         $.getJSON("https://en.wikipedia.org/w/api.php?action=query&prop=revisions&titles="+ encodeURIComponent(mw.config.get("wgRelevantPageName")) +"&rvslots=*&rvprop=ids&formatversion=2&format=json", r2=>{
                             // Got response, compare
-                            if (wikiEditor.info.changeWatch.lastRevID != r2.query.pages[0].revisions[0].revid) {
+                            if (rw.info.changeWatch.lastRevID != r2.query.pages[0].revisions[0].revid) {
                                 // New Revision! Redirect.
-                                clearInterval(wikiEditor.info.changeWatch.timecheck); // clear updates
+                                clearInterval(rw.info.changeWatch.timecheck); // clear updates
                                 let latestRId = r2.query.pages[0].revisions[0].revid;
                                 let parentRId = r2.query.pages[0].revisions[0].parentid;
 
@@ -452,10 +452,10 @@ wikiEditor.config = `+ JSON.stringify(wikiEditor.config) +"; //</nowiki>"; // ge
                     }, 5000);
                 });
             } else {
-                clearInterval(wikiEditor.info.changeWatch.timecheck); // clear updates
+                clearInterval(rw.info.changeWatch.timecheck); // clear updates
                 $("#rwSpyIcon").css("color", ""); // clear colour from icon
-                wikiEditor.visuals.toast.show("Alerts Disabled.");
-                wikiEditor.info.changeWatch.active = false;
+                rw.visuals.toast.show("Alerts Disabled.");
+                rw.info.changeWatch.active = false;
             }
         }
     }

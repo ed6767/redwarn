@@ -1,5 +1,5 @@
 // THE MAIN PAGE DOES NOT INCLUDE MATERIAL DESIGN LITE CSS. Include all the things here if needed.
-var wikiEditorStyle = `
+var rwStyle = `
 .mdl-tooltip {
     -webkit-transform: scale(0);
     transform: scale(0);

@@ -1,4 +1,4 @@
-wikiEditor.talkPage = { // For talk page ease of use. rev11
+rw.talkPage = { // For talk page ease of use. rev11
     "init" : ()=> {
         // Called when on a talk page.
         // Find every message by regex matching the timestamps
