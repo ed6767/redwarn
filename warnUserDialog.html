@@ -22,14 +22,14 @@
 
     <!-- FORM -->
     <form id="newNoticeForm">
-    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width:75%;"> <!-- 75% for account standing-->
+    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width:75%;"> <!-- 75% for account standing -->
         <input class="mdl-textfield__input" type="text" id="trgtUsrVisualBox" value="`+ rw.info.targetUsername(un) +`" readonly>
         <label class="mdl-textfield__label" for="trgtUsrVisualBox">Target</label>
         <div class="mdl-tooltip" for="trgtUsrVisualBox">
             To target a different user, please visit their userpage.
         </div>
     </div>
-
+    <span style="display:none;">`+ (hideUserInfo ? "" : "</span>") + `<!-- hide if hide requested-->
     <!-- Last warning note -->
     `+ lastWarning +`
 
@@ -48,7 +48,7 @@
             Preview Userpage
         </span>
     </div>
-
+    `+ (hideUserInfo ? "</span>" : "") + ` <!-- end span if hidden -->
     <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label getmdl-select" style="width:100%">
         <input type="text" value="" class="mdl-textfield__input" id="template" style="font-size:14px;" onkeypress="searchReasons();" autocomplete="off">
         <input type="hidden" value="" name="template">
@@ -226,12 +226,15 @@
     </span>
 
     <!-- SUBMIT BUTTONS --> <br/>
+    <span style="float:left;color:red;" id="errorString">
+        
+    </span>
     <span style="float:right;">
         <button class="mdl-button mdl-js-button mdl-js-ripple-effect" onclick="window.parent.postMessage('closeDialog', '*');">
             CANCEL
         </button>
         <button id="submitBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" onclick="submitEdit();">
-            SEND NOTICE
+            `+ (customCallback ? customCallback : `SEND NOTICE`) + ` <!-- use custom button if requested -->
         </button>
     </span>
 </div>
@@ -456,7 +459,7 @@
                 // No warning level needed, leaving for readability
             } else {
                 // No radio button pressed, not a single warning/notice
-                pushToast("Please select a notice level");
+                $("#errorString").text("Please select a warning level.");
                 return;
             }
         } else {
@@ -467,10 +470,11 @@
         // TEMPLATE
         if (data.template == "") {
             // No reason selected
-            pushToast("Please select a reason");
+            $("#errorString").text("Select a reason.");
             return;
         }
-
+        // All good
+        $("#errorString").text("");
         currentTemplate = rules[data.template].template; // assemble
         if ($("#specialInfo:visible").length > 0) {
             callback(currentTemplate + currentLevel + "|" + data.specialInfo); // callback w data for special
@@ -493,7 +497,7 @@
             var wikiTxt = document.getElementById("wikiTxt").value;
             if (!wikiTxt.includes("`+ rw.sign() +`")) {
                 // Not signed, warn
-                pushToast("Sign your notice!");
+                $("#errorString").text("Please sign your notice.");
                 return; // Do not continue
             }
             window.parent.postMessage('applyNotice\\\`' + document.getElementById("trgtUsrVisualBox").value + '\\\`' + wikiTxt + '\\\`' + "New Notice: "+ rules[data.template].name); // Push upstairs and commit

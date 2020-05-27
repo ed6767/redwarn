@@ -5,16 +5,17 @@
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
         <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-        <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+        
         <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.blue-indigo.min.css" />
     </head>
     <body onload="refreshLive();"> <!-- Show a few edits on load -->
     <!-- No header, and the drawer stays open on larger screens (fixed drawer). -->
         <div class="mdl-layout mdl-js-layout mdl-layout--fixed-drawer">
-            <div class="mdl-layout__drawer" style="width:`+ sidebarSize +`px">
-            <span class="mdl-layout-title">RedWarn Recent Changes Patrol</span>
+            <div class="mdl-layout__drawer" style="width:100%;-webkit-transform: translateX(0px); transform: translateX(0px);">
+            <span class="mdl-layout-title">`+ rw.logoHTML +` Patrol</span>
             <nav class="mdl-navigation">
                 <a class="mdl-navigation__link" href="https://en.wikipedia.org/wiki/Special:RecentChanges">Return to Wikipedia / Change filter options</a>
+                <a class="mdl-navigation__link" href="#" id="newAttached" target="_blank">Open New Attached Tab</a>
                 <a class="mdl-navigation__link" href="#" style="background-color: teal;color:white;" onmouseover="tI = setInterval(refreshLive,  750);" onmouseout="clearTimeout(tI);">Hover your cursor here for live updates</a>
                 <div id="recentChangesContainer">
                 </div>
@@ -22,27 +23,17 @@
             </nav>
             </div>
             <main class="mdl-layout__content">
-            <div class="page-content" style="height:100%">
-
-                <div id="welcomeContainer" style="padding-left: `+ (sidebarSize - 220) +`;padding-top: calc(5% - 60px);padding-right:5%;">
-                    <h2>Welcome to RedWarn Patrol!</h2>
-                    <p>
-                        To the left, you can see a list of recent changes. To view the latest revision of the article that was changed, simply click it on the left.<br>
-                        The stronger the colour, the more the amount of content that has been changed. By default, red means a change that made the page smaller, and green as an edit that made the page bigger. You can change these colours in your preferences.<br>
-                        For full instructions, refer to the user guide.
-                    </p>
-                </div>
-
-                <div id="loadingContainer" style="display: none;padding-left: `+ (sidebarSize - 240) +`;text-align: center;padding-top: calc(10% - 60px);">
-                    <div class="mdl-spinner mdl-js-spinner is-active"></div>
-                </div>
-
-                <iframe src="about:blank" style="display: none; height:100%; width: calc(100% - `+ (sidebarSize - 250) +`px);padding-left: `+ (sidebarSize - 250) +`;"></iframe>
+            <div class="page-content" style="display:none;">
             </div>
             </main>
         </div>
 
     <script>
+// Create broadcast channel
+var bcID = "RWBC_" + Math.random().toString(36).substring(7);
+const bc = new BroadcastChannel(bcID);
+$("#newAttached").attr("href", "https://en.wikipedia.org/wiki/User:Ed6767/redwarn/patrol#rwPatrolAttach-"+ bcID); // set link
+
 var tI;
 function convertRange( value, r1, r2 ) { 
     return ( value - r1[ 0 ] ) * ( r2[ 1 ] - r2[ 0 ] ) / ( r1[ 1 ] - r1[ 0 ] ) + r2[ 0 ];
@@ -92,22 +83,13 @@ function refreshLive() {
 
 function goToLatestDiffPage(article) {
     $("#welcomeContainer").hide();
-    $("iframe").hide();
-    $("#loadingContainer").show();
-
-    $("iframe").on("load", ()=>{
-        // Page loaded handke
-        $("#welcomeContainer").hide();
-        $("iframe").show();
-        $("#loadingContainer").hide();
-    });
     // Nav to latest diff page
     $.getJSON("https://en.wikipedia.org/w/api.php?action=query&prop=revisions&titles="+ encodeURIComponent(article) +"&rvslots=*&rvprop=ids%7Cuser&formatversion=2&format=json", r=>{
             // We got the response
             let latestRId = r.query.pages[0].revisions[0].revid;
             let parentRId = r.query.pages[0].revisions[0].parentid;
-            // Load the preview page of the latest one
-            $("iframe").attr("src", "https://en.wikipedia.org/w/index.php?title="+ encodeURIComponent(name) +"&diff="+ latestRId +"&oldid="+ parentRId +"&diffmode=source");
+            // Open page in new tab (has to be done here due to new security systems)
+            bc.postMessage("https://en.wikipedia.org/w/index.php?title="+ encodeURIComponent(name) +"&diff="+ latestRId +"&oldid="+ parentRId +"&diffmode=source");
     });
 }
 

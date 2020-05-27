@@ -12,7 +12,7 @@ var onSettingsLoad = {};
   <header class="mdl-layout__header">
     <div class="mdl-layout__header-row">
       <!-- Title -->
-      <span class="mdl-layout-title" style="width: calc(100% - 60px);">RedWarn Preferences</span>
+      <span class="mdl-layout-title" style="width: calc(100% - 60px);">`+ rw.logoHTML +` Preferences</span>
       <div id="apply" class="icon material-icons" style="float:right;">
         <span style="cursor: pointer; padding-right:15px;" onclick="saveConfig();">
             save
@@ -137,11 +137,11 @@ var onSettingsLoad = {};
                 </div>
                 <input type="hidden" value="compare_arrows" name="rollBackPrevIcon" id="rollBackPrevIcon" /> <!-- HIDDEN INPUT FOR ROLLBACK PREVIEW -->
 
-                <div id="wlRU" class="icon material-icons"><span style="cursor: pointer; font-size:28px; padding-right:5px;">sentiment_satisfied_alt</span></div>
+                <div id="wlRU" class="icon material-icons"><span style="cursor: pointer; font-size:28px; padding-right:5px;">library_add</span></div>
                 <div class="mdl-tooltip mdl-tooltip--large" for="wlRU">
-                    Quick Welcome User
+                    Quick Template
                 </div>
-                <input type="hidden" value="sentiment_satisfied_alt" name="wlRUIcon" id="wlRUIcon" /> <!-- HIDDEN INPUT FOR QUICK WELCOME REVISION USER -->
+                <input type="hidden" value="library_add" name="wlRUIcon" id="wlRUIcon" /> <!-- HIDDEN INPUT FOR Quick Template REVISION USER -->
 
                 <script>
                     // Link all the events
@@ -182,27 +182,6 @@ var onSettingsLoad = {};
             <!-- END MAIN APPEARANCE SECTION -->
             <hr>
             <h4>Patrol Appearance</h4>
-
-            <!-- SIDEBAR SIZE -->
-            <span style="font-size: 18px;padding-bottom: 20px;cursor:help;" id="ptrsidebarSize">Sidebar size:</span><br>
-            <div class="mdl-tooltip mdl-tooltip--large" for="ptrsidebarSize">
-                The size of the sidebar where recent changes are shown.<br>
-                Use Small is your screen is low resolution, otherwise, changing this option is not recommended.
-            </div>
-            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="ptrSidebarSmall">
-                <input type="radio" id="ptrSidebarSmall" class="mdl-radio__button" name="ptrSidebar" value="250">
-                <span class="mdl-radio__label">Small</span>
-            </label>
-            &nbsp;
-            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="ptrSidebarMed">
-                <input type="radio" id="ptrSidebarMed" class="mdl-radio__button" name="ptrSidebar" value="500" checked>
-                <span class="mdl-radio__label">Medium (default)</span>
-            </label>
-            &nbsp;
-            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="ptrSidebarLg">
-                <input type="radio" id="ptrSidebarLg" class="mdl-radio__button" name="ptrSidebar" value="750">
-                <span class="mdl-radio__label">Large</span>
-            </label><br><br>
 
             <!-- ADDITION COL -->
             <span style="font-size: 18px;padding-bottom: 20px;cursor:help;" id="ptraddCol">Colour of additions:</span><br>
@@ -260,7 +239,43 @@ var onSettingsLoad = {};
         <section class="mdl-layout__tab-panel" id="scroll-tab-2">
         <div class="page-content">
             <!-- BEHAVIOR SETTINGS -->
-            <h5>Behavior settings coming soon! Please leave suggestions for options you'd like to see in RedWarn's talk page.</h5>
+            <h5>Enable or Disable Features</h5>
+            <!-- User right click menu rwDisableRightClickUser disable enable-->
+            <strong>User right-click menu</strong><br />
+            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="rwDisableRightClickUserEnable">
+                <input type="radio" id="rwDisableRightClickUserEnable" class="mdl-radio__button" name="rwDisableRightClickUser" value="enable" checked>
+                <span class="mdl-radio__label">Enable</span>
+            </label>
+            &nbsp;&nbsp;
+            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="rwDisableRightClickUser">
+                <input type="radio" id="rwDisableRightClickUser" class="mdl-radio__button" name="rwDisableRightClickUser" value="disable">
+                <span class="mdl-radio__label">Disable</span>
+            </label>
+            <br />
+            <!-- Review Auto Accept -->
+            <strong>Page Review: Auto Submit Accept</strong> - Automatically accepts revision after five seconds.<br />
+            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="rwDisableReviewAutoAcceptEnable">
+                <input type="radio" id="rwDisableReviewAutoAcceptEnable" class="mdl-radio__button" name="rwDisableReviewAutoAccept" value="enable" checked>
+                <span class="mdl-radio__label">Enable</span>
+            </label>
+            &nbsp;&nbsp;
+            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="rwDisableReviewAutoAccept">
+                <input type="radio" id="rwDisableReviewAutoAccept" class="mdl-radio__button" name="rwDisableReviewAutoAccept" value="disable">
+                <span class="mdl-radio__label">Disable</span>
+            </label>
+            <br />
+            <!-- Review Auto Revert -->
+            <strong>Page Review: Auto Submit Revert</strong> - Automatically submits revert after five seconds.<br />
+            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="rwEnableReviewAutoRevertEnable">
+                <input type="radio" id="rwEnableReviewAutoRevertEnable" class="mdl-radio__button" name="rwEnableReviewAutoRevert" value="enable">
+                <span class="mdl-radio__label">Enable</span>
+            </label>
+            &nbsp;&nbsp;
+            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="rwEnableReviewAutoRevert">
+                <input type="radio" id="rwEnableReviewAutoRevert" class="mdl-radio__button" name="rwEnableReviewAutoRevert" value="disable" checked>
+                <span class="mdl-radio__label">Disable</span>
+            </label>
+
             <!-- END BEHAVIOR SETTINGS -->
         </div>
         </section>
@@ -276,10 +291,10 @@ var onSettingsLoad = {};
         <section class="mdl-layout__tab-panel" id="scroll-tab-6">
         <div class="page-content">
             <!-- ABOUT TAB -->
-            <h2>RedWarn `+ rw.version +`</h2>
+            <h2>`+ rw.logoHTML +` `+ rw.version +`</h2>
             <h5>The user <span id="hahaFunnyJoke">friendly</span> edit patrol tool.</h5>
             <!-- Impliment very original and not outdated haha jokes -->
-            <script>$("#hahaFunnyJoke").on("click", ()=> {Object.assign(document.createElement('a'), { target: '_blank', href: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"}).click();});</script>
+            <script>$("#hahaFunnyJoke").on("click", ()=> {Object.assign(document.createElement('a'), { target: '_blank', href: "https://www.youtube.com/watch?v=FTQbiNvZqaY"}).click();});</script>
             
             <hr>
             <!-- RESET BUTTON -->

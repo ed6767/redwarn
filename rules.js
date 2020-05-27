@@ -728,14 +728,6 @@ var rules = [
         ]
     },
     {
-        "name": "Business promotion",
-        "catagory": "Single Warning",
-        "template": "uw-bizlist",
-        "warningLevels": [
-            6
-        ]
-    },
-    {
         "name": "Bot username",
         "catagory": "Single Warning",
         "template": "uw-botun",

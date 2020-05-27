@@ -1,5 +1,5 @@
 var dialogEngine = {
-    "init" : function(){
+    "init" : ()=>{
         $("body").append(`
         <div id="dialogEngineContainer">
         </div>

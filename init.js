@@ -25,9 +25,14 @@ function redirect(url, inNewTab) {
         window.location.href = url; // open here
     }
 }
-
+if (rw != null) {
+    // Double init, rm the old version and hope for the best
+    rw = {};
+    mw.notify("Warning! You have two versions of RedWarn installed at once! Please ensure that you only use one instance to prevent issues.");
+}
 var rw = {
-    "version" : "rev11", // don't forget to change each version!
+    "version" : "rev12dev", // don't forget to change each version!
+    "logoHTML" : `<span style="font-family:Roboto;font-weight: 300;text-shadow:2px 2px 4px #0600009e;"><span style="color:red">Red</span>Warn</span>`, // HTML of the logo
     "sign": ()=>{return atob("fn5+fg==")}, // we have to do this because mediawiki will swap this out with devs sig.
     "welcome": ()=> {return atob("e3tzdWJzdDpXZWxjb21lfX0=");}, // welcome template
     "welcomeIP": ()=> {return atob("e3tzdWJzdDp3ZWxjb21lLWFub259fQ==");}, // welcome IP template
@@ -62,11 +67,14 @@ var rw = {
                 `+ rwStyle +`
                 </style>
             `); // Append required libaries to page
+
+
+            
             // wait for load
             waitForMDLLoad(callback);
         },
 
-        "register" : function(c) {
+        "register" : c=> {
             // Register a componant with MDL
             componentHandler.upgradeElement(c);
         },
@@ -74,11 +82,11 @@ var rw = {
         "pageIcons" : ()=> {
             // Thanks to User:Awesome Aasim for the suggestion and some sample code.
             try {
-                let pageIconHTML = ""; // obj it is appended to
-                /* [[[[include pageIcons.html]]]] */
-
+                let pageIconHTML = "<span id='rwPGIconContainer' style='display:none;'>"; // obj it is appended to
                 // Possible icons locations: default (page icons area) or sidebar
                 let iconsLocation = rw.config.pgIconsLocation ? rw.config.pgIconsLocation : "default"; // If set in config, use config
+                /* [[[[include pageIcons.html]]]] */
+                pageIconHTML += "</span>"; // close contianer
                 if (iconsLocation == "default") {
                     try {
                         document.getElementsByClassName("mw-indicators mw-body-content")[0].innerHTML += pageIconHTML; // Append our icons to the page icons
@@ -110,9 +118,12 @@ var rw = {
                                 $("#redwarn").removeClass("dropdown-active");
                             }
                         });
-                        $(".sidebar-chunk").find("h2").click(e=>{
+                        (h=>{
+                            $($('.sidebar-chunk > h2:contains("RedWarn")')[0]).click(e=>h(e)); // collapsed
+                            $($('.sidebar-inner > #redwarn-label')[0]).click(e=>h(e)); // visible
+                        })(e=>{ // Handler
                             e.preventDefault();
-                            if ($(this).parent().attr("id") != "redwarn") {
+                            if ($("#redwarn").hasClass("dropdown-active")) {
                                 $("#redwarn").removeClass("dropdown-active");
                             } else {
                                 $("#redwarn").toggleClass("dropdown-active");
@@ -136,6 +147,10 @@ var rw = {
             for (let item of document.getElementsByClassName("mdl-tooltip")) {
                 rw.visuals.register(item); 
             }
+            
+            // Now fade in container
+            $("#rwPGIconContainer").fadeIn();
+            
             // That's done :)
         }
     },
@@ -146,7 +161,8 @@ var rw = {
             let sidebarSize = 500;
             let addCol = "0,255,0"; // rbg
             let rmCol = "255,0,0"; // rgb
-            if (rw.config.ptrSidebar) sidebarSize = rw.config.ptrSidebar; // If preferences set, apply them
+            /*if (rw.config.ptrSidebar) sidebarSize = rw.config.ptrSidebar; DEP. REV12*/
+             // If preferences set, apply them
             if (rw.config.ptrAddCol) addCol = rw.config.ptrAddCol;
             if (rw.config.ptrRmCol) rmCol = rw.config.ptrRmCol;
             
@@ -199,7 +215,6 @@ function initRW() {
     rw.visuals.init(()=>{
         rw.visuals.toast.init();
         dialogEngine.init();
-        rw.ui.registerContextMenu(); // register context menus
 
         // Quick check we have perms to use (in confirmed/autoconfirmed group)
         rw.info.featureRestrictPermissionLevel("confirmed", false, ()=>{
@@ -227,27 +242,38 @@ function initRW() {
         // Load config and check if updated
         rw.info.getConfig(()=> {
             rw.visuals.pageIcons(); // page icons once config loaded
+            rw.ui.registerContextMenu(); // register context menus once config loaded
             if (rw.config.lastVersion != rw.version) {
                 // We've had an update
                 rw.config.lastVersion = rw.version; // update entry 
                 rw.info.writeConfig(true, ()=> { // update the config file
-                    // Push an update toast
-                    rw.visuals.toast.show("RedWarn has been updated!", "MORE",
-                    ()=>redirect("https://en.wikipedia.org/wiki/User:Ed6767/redwarn/bugsquasher", true), 7500);
+                    // Show an update dialog
+                    rw.ui.confirmDialog(`
+                    <h2 style="font-weight: 200;font-size:45px;line-height: 48px;">Welcome to `+rw.logoHTML+` `+ rw.version +`!</h2>
+                    <b>RedWarn has just got a new update!</b> Would you like to read more about what's new?
+                    `,
+                    "READ SUMMARY", ()=>{
+                        dialogEngine.dialog.close();
+                        redirect("https://en.wikipedia.org/wiki/User:Ed6767/redwarn/bugsquasher#"+ rw.version + "_summary", true);
+                    },
+                    "LATER", ()=>{
+                        dialogEngine.dialog.close();
+                        rw.visuals.toast.show("You can read more later at RedWarn's page (WP:REDWARN)");
+                    },168);
                 });
             }
-
+            // TODO: probably fix this mess into a URL
                 // Check if a message is in URL (i.e edit complete ext)
             if(window.location.hash.includes("#noticeApplied-")) {
                 // Show toast w undo edit capabilities
                 // #noticeApplied-currentEdit-pastEdit
                 rw.visuals.toast.show("Message saved", "UNDO", ()=>{
                     // Redirect to undo page mw.config.get("wgRelevantPageName");
-                    // TODO: maybe replace with custom page in future? 
+                    // TODO: maybe replace with custom page in future?
                     window.location.href = "/w/index.php?title="+ mw.config.get("wgRelevantPageName") +"&action=edit&undoafter="+ window.location.hash.split("-")[2] +"&undo="+ window.location.hash.split("-")[1];
                 }, 7500);
-            } else if (window.location.hash.includes("#redirectLatestRevision")) {
-                rw.visuals.toast.show("Redirected to the lastest revision.");
+            } else if (window.location.hash.includes("#redirectLatestRevision")) { // When latest revision loaded
+                rw.visuals.toast.show("Redirected to the lastest revision.", "BACK", ()=>window.history.back(), 4000); // When back clciked go back
             } else if (window.location.hash.includes("#watchLatestRedirect")) {
                 // Redirected to latest by redirector, play sound
                 let src = 'https://raw.githubusercontent.com/ed6767/redwarn/master/redwarn%20notifs%20new%20edit.mp3';
@@ -261,11 +287,15 @@ function initRW() {
                 rw.visuals.toast.show("The selection could not be investigated.", false, false, 10000);
             } else if (window.location.hash.includes("#configChange")) {
                 rw.visuals.toast.show("Preferences saved.");
+            } else if (window.location.hash.includes("#rwPendingAccept")) {
+                rw.visuals.toast.show("Changes accepted.");
+            } else if (window.location.hash.includes("#rwReviewUnaccept")) {
+                rw.visuals.toast.show("Changes unaccepted.");
             } else if (window.location.hash.includes("#compLatest")) {
                 // Go to the latest revison
                 rw.info.isLatestRevision(mw.config.get("wgRelevantPageName"), 0, ()=>{}); // auto filters and redirects for us - 0 is an ID that will never be
             } else if (window.location.hash.includes("#rollbackPreview")) {
-                // Rollback preview iframe. NEEDS WORK. DON'T FORGET TO SET common.js back!!!
+                // Rollback preview page
                 $('.mw-revslider-container').html(`
                 <style>
                 #mw-navigation {
@@ -284,7 +314,7 @@ function initRW() {
                 </style>
                 <div style="padding-left:10px;">
                     <h2>This is a rollback preview</h2>
-                    <a href="#" onclick="window.parent.parent.postMessage('closeDialog');">Click here</a> or the cross in the top-right corner to close this preview
+                    To rollback, return to the original page.
                 </div>
 
                 <script>
@@ -308,8 +338,8 @@ function initRW() {
             } else if (window.location.href.includes("/wiki/Special:RecentChanges")) {
                 // Recent changes page
                 // Add redwarn btn
-                $(".mw-rcfilters-ui-filterWrapperWidget-bottom").prepend(`
-                <div id="openRWP" class="icon material-icons"><span style="cursor: pointer;" onclick="rw.recentChanges.openPage(window.location.search.substr(1));">how_to_reg</span></div>
+                $(".mw-specialpage-summary").prepend(`
+                <div id="openRWP" class="icon material-icons"><span style="cursor: pointer;" onclick="rw.recentChanges.openPage(window.location.search.substr(1));">how_to_reg</span></div>  Click the icon to launch RedWarn patrol with these filters
                 <div class="mdl-tooltip mdl-tooltip--large" for="openRWP">
                     Launch RedWarn Patrol with these filters
                 </div>
@@ -318,8 +348,30 @@ function initRW() {
                     rw.visuals.register(item); 
                 }
 
-                rw.recentChanges.diffLinkAddRedWarn(); // Add redwarn to all links
+            } else if (window.location.hash.includes("#rwPatrolAttach-RWBC_")) { // Connect to recent changes window
+                let bcID = window.location.hash.split("-")[1]; // get bc id from hash
+                const bc = new BroadcastChannel(bcID); // open channel
+                bc.onmessage = msg=>{// On message open here
+                    rw.ui.loadDialog.show("Loading...");
+                    redirect(msg.data);
+                } 
+                // Set session storage (see below) Hopefully will only effect this window
+                sessionStorage.rwBCID = bcID;
             }
+            if (sessionStorage.rwBCID != null){
+                //  Session storage set! Connect to bcID
+                const bc = new BroadcastChannel(sessionStorage.rwBCID); // open channel
+                bc.onmessage = msg=>{// On message open here
+                    rw.ui.loadDialog.show("Loading...");
+                    redirect(msg.data);
+                } 
+            }
+            
+            // Pending changes
+            rw.PendingChangesReview.reviewPage(); // will auto check if possible ext and add icons
+
+            // MultiAct history
+            rw.multiAct.initHistoryPage();
         }); 
     });
 }

@@ -32,7 +32,7 @@
         <textarea id="wikiTxt" name="wikiTxt" style="height: 150px; max-height: 150px; overflow-y: auto; width:100%;">
 === Your Subject ===
 Your message here. `+ rw.sign() +`
-        </textarea>
+`+(extraInfo != null ? extraInfo : "")+`</textarea>
     </div> <!-- Used to edit Wikitext -->
 </span>
 </form>

@@ -13,11 +13,11 @@ rw.ui = {
         <div class="mdl-tooltip" for="close">
             Close
         </div>
-        <iframe src="`+ url +`" frameborder="0" style="height:95%;"></iframe>
+         <iframesrc="`+ url +`" frameborder="0" style="height:95%;"></iframe>
         `, document.body.offsetWidth-70, document.body.offsetHeight-50)).showModal();
     },
 
-    "beginWarn" : (ignoreWarnings, un, pg)=> {
+    "beginWarn" : (ignoreWarnings, un, pg, customCallback, callback, hideUserInfo)=> { // if customCallback = false, callback(templatestr) (rev12)
         // Give user a warning (show dialog)
         if ((rw.info.targetUsername(un) == rw.info.getUsername()) && !ignoreWarnings) {
             // Usernames are the same, give toast.
@@ -60,9 +60,13 @@ rw.ui = {
             let user = _eD[1];
             let wikiTxt = _eD[2];
             let summary = _eD[3];
-
-            // MAKE EDIT
-            rw.info.addWikiTextToUserPage(user, wikiTxt, true, summary);
+            if ((customCallback == null) || (customCallback == false)) { // if not set
+                // MAKE EDIT
+                rw.info.addWikiTextToUserPage(user, wikiTxt, true, summary);
+            } else {
+                // Send callback
+                callback(wikiTxt);
+            }
         });
 
         // Check most recent warning level
@@ -128,7 +132,7 @@ rw.ui = {
             
     }, // end beginWarn
 
-    "newMsg" : un=>{
+    "newMsg" : (un, noRedirect, buttonTxt, callback)=>{
         // New message dialog
         // Setup preview handling
         addMessageHandler("generatePreview`*", m=>{
@@ -151,9 +155,12 @@ rw.ui = {
             let user = _eD[1];
             let wikiTxt = _eD[2];
             let summary = _eD[3];
-
-            // MAKE EDIT
-            rw.info.addWikiTextToUserPage(user, wikiTxt, false, summary); // This requires title.
+            if (noRedirect) { // If no redirect, callback
+                callback(wikiTxt);
+            } else {
+                // MAKE EDIT
+                rw.info.addWikiTextToUserPage(user, wikiTxt, false, summary); // This requires title.
+            }
         });
 
         // CREATE DIALOG
@@ -166,8 +173,8 @@ rw.ui = {
     "registerContextMenu" : () => { // Register context menus for right-click actions
         // More docs at https://swisnl.github.io/jQuery-contextMenu/demo/trigger-custom.html
 
-        // USER TALK ACTIONS
-        $(()=>{
+        // USER TALK ACTIONS - check if not disabled then continue
+        if (rw.config.rwDisableRightClickUser != "disable") $(()=>{
             $.contextMenu({
                 selector: 'a[href*="/wiki/User_talk:"], a[href*="/wiki/User:"], a[href*="/wiki/Special:Contributions/"]', // Select all appropriate user links
                 callback: (act, info)=>{
@@ -206,7 +213,7 @@ rw.ui = {
 
                         "sendMsg" : un=>rw.ui.newMsg(un), // show new msg dialog
 
-                        "quickWel" : un=>rw.info.quickWelcome(un), // Submit quick welcome
+                        "quickWel" : un=>rw.quickTemplate.openSelectPack(un), // Submit Quick Template
 
                         "newNotice" : un=>rw.ui.beginWarn(false, un), // show new warning dialog
 
@@ -220,112 +227,52 @@ rw.ui = {
 
                         "usrEditCount": un=>{ // Show a tost with this users prefered pronouns
                             rw.info.getUserEditCount(un, count=>{
+                                if (count == null) count = "an unknown number of"; // stop undefined message 
                                 rw.visuals.toast.show(un + " has made "+ count + " edits.", false, false, 3000);
+                            });
+                        },
+
+                        "usrStanding": un=>{
+                            // Show toast with last warning level
+                            rw.info.lastWarningLevel(un, level=>{
+                                rw.visuals.toast.show(un + " has recieved "+ [
+                                    "no warnings",
+                                    "a level 1 notice",
+                                    "a level 2 caution",
+                                    "a level 3 warning",
+                                    "a level 4 final or ONLY warning"
+                                ][level] + " this month.", false, false, 4000);
                             });
                         }
 
                     })[act](targetUsername.trim());
                     
                 },
-                items: {
+                items: { // TODO: add extra options like logs ext. ext.
                     "usrPg": {name: "User Page"},
                     "tlkPg": {name: "Talk Page"},
-                    "sendMsg": {name: "Send message"},
-                    "newNotice": {name: "New Notice"},
-                    "quickWel": {name: "Quick Welcome"},
-                    "contribs": {name: "Contributions"},
+                    "aAsubmenu": {
+                        "name": "Quick Actions", 
+                        "items": {
+                            "sendMsg": {name: "New Talk Page Message"},
+                            "newNotice": {name: "New Notice"},
+                            "quickWel": {name: "Quick Template"},
+                            "adminReport": {name: "Report to Admin"}
+                        }
+                    },
                     "aIsubmenu": {
                         "name": "Account info", 
                         "items": {
+                            "contribs": {name: "Contributions"},
                             "accInfo": {name: "Central Auth"},
                             "usrPronouns": {"name": "Pronouns"},
-                            "usrEditCount": {"name": "Edit Count"}
+                            "usrEditCount": {"name": "Edit Count"},
+                            "usrStanding": {"name": "Highest Warning"}
                         }
-                    },
-                    "adminReport": {name: "Report to Admin"}
+                    }  
                 }
             });
         }); // END USER ACTIONS CONTEXT MENU
-
-
-        // VOID NOTICE CONTEXT MENU (extendedconfirmed ONLY)
-        rw.info.featureRestrictPermissionLevel("extendedconfirmed", ()=>$(()=>{
-            $.contextMenu({
-                selector: 'p:has(a[href*="wiki/File:Stop_hand_nuvola.svg"]), p:has(a[href*="wiki/File:Information_orange.svg"]), p:has(a[href*="wiki/File:Information.svg"]), p:has(a[href*="wiki/File:Nuvola_apps_important.svg"])', // Select all appropriate paragraphs containing a notice
-                callback: (act, info)=>{
-                    // CALLBACK
-                    let textToMatch = $(info.$trigger[0]).text(); // Text to match w api
-                    if (!$(info.$trigger[0]).html().includes("/wiki/User_talk:")) { // No sig. Likely multi-line
-                        // We can't void this as it is multi-line. Maybe something to add in future?
-                        rw.visuals.toast.show("This type of notice can't be automatically voided. You will need to remove this notice manually.", false, false, 7500);
-                        return; //exit
-                    }
-                    
-                    console.log(textToMatch);
-                    // Now we make the request and read line by line
-                    $.getJSON("https://en.wikipedia.org/w/api.php?action=query&prop=revisions&titles="+mw.config.get("wgRelevantPageName")+"&rvslots=*&rvprop=content&formatversion=2&format=json", latestR=>{
-                        // Grab text from latest revision of talk page
-                        // Check if exists
-                        
-                        if (latestR.query.pages[0].missing) { // If page doesn't exist, error because something defo went wrong
-                            rw.visuals.toast.show("The notice could not be automatically removed due to an error.", false, false, 5000);
-                            return; // exit
-                        }
-
-                        rw.visuals.toast.show("Please wait...", false, false, 2000);
-                        let revisionWikitext = latestR.query.pages[0].revisions[0].slots.main.content;
-                        let wikiTxtLines = revisionWikitext.split("\n");
-                        // let's continue
-                        
-                        let hasBeenMatched = false;
-                        let finalStr = "";
-                        wikiTxtLines.forEach((element, i) => {
-                            let compStr = rw.info.stripWikiTxt(element);
-                            if (compStr.toLowerCase().includes(textToMatch.toLowerCase().trim())) {
-                                // Match! Don't add this one normally. Add our sig and that it is now void. MUST REMOVE PIC (as the textTomatch did) in order to stop Redwarn showing as warning still
-                                hasBeenMatched = true;
-                                finalStr += "{{strikethrough|" + textToMatch + "}}<br>'''The above notice was placed in error and is now void.''' " + rw.sign() + " \n";
-                            } else {
-                                finalStr += element + "\n";
-                            }
-                        });
-                        if (!hasBeenMatched) {
-                            // For whatever reason, we cannot remove this, no match.
-                            rw.visuals.toast.show("This type of notice can't be automatically voided. You will need to remove this notice manually.", false, false, 7500);
-                            return; //exit
-                        }
-
-                        // Let's continue and apply edit
-                        $.post("https://en.wikipedia.org/w/api.php", {
-                            "action": "edit",
-                            "format": "json",
-                            "token" : mw.user.tokens.get("csrfToken"),
-                            "title" : mw.config.get("wgRelevantPageName"),
-                            "summary" : "Void notice made in error [[WP:REDWARN|(RedWarn)]]", // summary sign here
-                            "text": finalStr
-                        }).done(dt => {
-                            // We done. Check for errors, then callback appropriately
-                            if (!dt.edit) {
-                                // Error occured or other issue
-                                console.error(dt);
-                                rw.visuals.toast.show("Sorry, there was an error. This notice has not been voided.");
-                            } else {
-                                // Success! Redirect to complete page
-                                window.location.hash = "#noticeApplied-" + dt.edit.newrevid + "-" + dt.edit.oldrevid; 
-                                location.reload();
-                                // We done
-                            }
-                        });
-                        // END CALLBACK
-                    });
-                    
-                },
-                items: {
-                    "rm": {name: "Void this notice"}
-                }
-            });
-        }), ()=>{}); // END REMOVE NOTICE CONTEXT MENU
-
         // NON-CONTRUCTIVE QUICKROLLBACK BUTTON CONTEXT MENU
         $(()=>{
             $.contextMenu({
@@ -345,7 +292,7 @@ rw.ui = {
             });
         }); // NON-CONTRUCTIVE QUICKROLLBACK BUTTON CONTEXT MENU
 
-        // TODO: add more, like quick welcome options ext.. and right-click on article link to begin rollback ext.
+        // TODO: add more, like Quick Template options ext.. and right-click on article link to begin rollback ext.
 
 
     }, // end context menus
@@ -458,7 +405,7 @@ rw.ui = {
                     "format": "json",
                     "token" : mw.user.tokens.get("csrfToken"),
                     "title" : aivPage,
-                    "summary" : "Reporting "+ target +" [[WP:REDWARN|(RedWarn)]]", // summary sign here
+                    "summary" : "Reporting "+ target +" [[WP:REDWARN|(RedWarn "+ rw.version +")]]", // summary sign here
                     "text": finalTxt
                 }).done(dt => {
                     // We done. Check for errors, then callback appropriately
@@ -528,7 +475,16 @@ rw.ui = {
         "close": ()=>rw.ui.loadDialog.dialog.close() // Close the dialog
     },
 
-    "sendFeedback" : ()=> {
+    "confirmDialog": (content, pBtnTxt, pBtnClick, sBtnTxt, sBtnClick, extraHeight) => {
+        // Confirm dialog (yes, no, ext...)
+        addMessageHandler("sBtn", sBtnClick);
+        addMessageHandler("pBtn", pBtnClick);
+        dialogEngine.create(mdlContainers.generateContainer(`
+        [[[[include confirmDialog.html]]]]
+        `, 500, 75 + extraHeight)).showModal();
+    },
+
+    "sendFeedback" : extraInfo=> {
         // Open feedback dialog, basically same as newmsg
         // Setup preview handling
         addMessageHandler("generatePreview`*", m=>{
