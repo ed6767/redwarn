@@ -17,15 +17,20 @@ rw.ui = {
         `, document.body.offsetWidth-70, document.body.offsetHeight-50)).showModal();
     },
 
-    "beginWarn" : (ignoreWarnings, un, pg, customCallback, callback, hideUserInfo)=> { // if customCallback = false, callback(templatestr) (rev12)
+    "beginWarn" : (ignoreWarnings, un, pg, customCallback, callback, hideUserInfo, autoSelectReasonIndex)=> { // if customCallback = false, callback(templatestr) (rev12) autoSelectReasonIndex(rev13) for quick rollbacks for vandalism ext..
         // Give user a warning (show dialog)
+        
+        let autoLevelSelectEnable = (!hideUserInfo) && (rw.config.rwautoLevelSelectDisable != "disable"); // If autolevelselect enabled (always disabled on hideUserInfo options)
+
         if ((rw.info.targetUsername(un) == rw.info.getUsername()) && !ignoreWarnings) {
-            // Usernames are the same, give toast.
-            rw.visuals.toast.show("You can not warn yourself. To test this tool, use a sandbox.", false, false, 7500);
+            // Usernames are the same, show dialog
+            rw.ui.confirmDialog("Whoops! You cannot warn yourself here. If you'd like to test, use a sandbox.", "OKAY", ()=>dialogEngine.closeDialog(), "", ()=>{}, 0);
             return; // DO NOT continue.
         }
 
         // Let's continue
+
+        // Assemble rule listbox
         let finalListBox = "";
         rules.forEach((rule, i) => {
             let style = "";
@@ -33,7 +38,13 @@ rw.ui = {
                 // Too long to fit
                 style="font-size:14px"
             }
-            finalListBox += `<li class="mdl-menu__item" data-val="`+ i +`" onmousedown="refreshLevels(`+i+`);"style="`+style +`">`+ rule.name +`</li>`;
+            finalListBox += `<li
+            class="mdl-menu__item"
+            data-val="`+ i +`"
+            onmousedown="refreshLevels(`+i+`);"
+            style="`+style +`">
+                ${rule.name}
+            </li>`; // add dataselected if = autoSelectReasonIndex & autoselect is enabled
         });
 
         // Setup preview handling
@@ -50,6 +61,14 @@ rw.ui = {
 
         // Add admin report handler
         addMessageHandler("adminR", ()=>rw.ui.openAdminReport(un));
+
+        // Add recent page handelr
+        addMessageHandler("openRecentPageSelector", ()=>rw.ui.recentlyVisitedSelector.showDialog(p=>{
+            // Send page back to container
+            dialogEngine.dialog.getElementsByTagName("iframe")[0].contentWindow.postMessage({
+                "action": "recentPage",
+                "result": p.replace(/_/g, ' ')}, '*');
+        }));
 
         // Add submit handler
 
@@ -364,6 +383,22 @@ rw.ui = {
             // Reset config recieved, set config back to default
             rw.info.getConfig(()=>{}, true); // TRUE HERE MEANS RESET TO DEAULT
         });
+
+        // Add install quick template handler
+        addMessageHandler("installQTP", ()=>{
+            // Show warning and confirm
+            rw.ui.confirmDialog(`
+            <b>WARNING:</b> Only install packs from users you trust. Installing a quick template pack gives the installer full access to your account to write to RedWarn's config files.
+            <br/><br/>
+            To install, click "install from pack code" and paste the code into the browser dialog that appears.
+            `, "Install from pack code", ()=>{
+                // Time to install
+                importScript(rw.quickTemplate.packCodeToPageName(prompt("Please enter the pack code, then click OK to install:"))); // using mediawiki importscript which does it from pagename
+            },
+            "CANCEL", ()=>dialogEngine.closeDialog(), 98);
+        });
+
+
         // Open preferences page with no padding, full screen
         dialogEngine.create(mdlContainers.generateContainer(`
         [[[[include preferences.html]]]]
@@ -445,21 +480,21 @@ rw.ui = {
                 <div id="rwUILoad">
                 </div>
                 `);
-                $("#rwUILoad").html(`
-                <dialog class="mdl-dialog" id="rwUILoadDialog">
-                    ` + mdlContainers.generateContainer(`[[[[include loadingSpinner.html]]]]`, 300, 30) +`
-                </dialog>
-                `); // Create dialog with content from loadingSpinner.html
-
-                rw.ui.loadDialog.dialog = document.querySelector('#rwUILoadDialog'); // set dialog var
-
-                // Firefox issue fix
-                if (! rw.ui.loadDialog.dialog.showModal) {
-                    dialogPolyfill.registerDialog(rw.ui.loadDialog.dialog);
-                }
-
-                rw.ui.loadDialog.hasInit = true;
             }
+            $("#rwUILoad").html(`
+            <dialog class="mdl-dialog" id="rwUILoadDialog">
+                ` + mdlContainers.generateContainer(`[[[[include loadingSpinner.html]]]]`, 300, 30) +`
+            </dialog>
+            `); // Create dialog with content from loadingSpinner.html
+
+            rw.ui.loadDialog.dialog = document.querySelector('#rwUILoadDialog'); // set dialog var
+
+            // Firefox issue fix
+            if (! rw.ui.loadDialog.dialog.showModal) {
+                dialogPolyfill.registerDialog(rw.ui.loadDialog.dialog);
+            }
+
+            rw.ui.loadDialog.hasInit = true;
         },
 
         "show" : text=> { // Init and create a new loading dialog
@@ -472,7 +507,14 @@ rw.ui = {
 
         "setText" : text=> $("#rwUILoadDialog > iframe")[0].contentWindow.postMessage(text, '*'), // Set text of loading by just sending the message to the container
 
-        "close": ()=>rw.ui.loadDialog.dialog.close() // Close the dialog
+        "close": ()=>{ // Close the dialog and animate
+            $("#rwUILoadDialog")
+            .addClass("closeAnimate")
+            .on("webkitAnimationEnd", ()=>{
+                // Animation finished
+                rw.ui.loadDialog.dialog.close();
+            });
+        } 
     },
 
     "confirmDialog": (content, pBtnTxt, pBtnClick, sBtnTxt, sBtnClick, extraHeight) => {
@@ -481,7 +523,7 @@ rw.ui = {
         addMessageHandler("pBtn", pBtnClick);
         dialogEngine.create(mdlContainers.generateContainer(`
         [[[[include confirmDialog.html]]]]
-        `, 500, 75 + extraHeight)).showModal();
+        `, 500, 80 + extraHeight)).showModal();
     },
 
     "sendFeedback" : extraInfo=> {
@@ -516,5 +558,79 @@ rw.ui = {
         dialogEngine.create(mdlContainers.generateContainer(`
         [[[[include sendFeedback.html]]]]
         `, 500, 390)).showModal(); // 500x390 dialog, see sendFeedback.html for code
+    },
+
+    "recentlyVisitedSelector" : { // Used to select recently visited page from a dropdown dialog
+        "dialog" : null,
+        "init" : content=>{
+            if ($("#rwRecentVistedSelectContainer").length < 1) {
+                // container hasn't already been init
+                $("body").append(`
+                <div id="rwRecentVistedSelectContainer">
+                </div>
+                `);
+            }
+            // let's continue
+            $("#rwRecentVistedSelectContainer").html(`
+            <dialog class="mdl-dialog" id="rwUILoadDialog">
+                ` + content +`
+            </dialog>
+            `); // Create dialog with content from loadingSpinner.html
+
+            rw.ui.recentlyVisitedSelector.dialog = document.querySelector('#rwUILoadDialog'); // set dialog var
+
+            // Firefox issue fix
+            if (! rw.ui.recentlyVisitedSelector.dialog.showModal) {
+                dialogPolyfill.registerDialog(rw.ui.recentlyVisitedSelector.dialog);
+            }
+        },
+
+        "showDialog" : callback=>{ // Show dialog and callback(selected article)
+            // Assemble revent visits listbox
+            let recentlyVisited = JSON.parse(window.localStorage.rwRecentlyVisited);
+
+             // Check if empty, if so, show dialog and exit
+             if ((recentlyVisited == null) || (recentlyVisited.length < 1)) {
+                rw.ui.confirmDialog("There are no recent pages to show.", "OKAY", ()=>dialogEngine.closeDialog(), "", ()=>{}, 0);
+                return; //exit, don't callback as not complete
+            }
+
+            // Let's continue
+            let finalRVList = "";
+            recentlyVisited.forEach((page, i) => {
+                finalRVList += `
+                <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="spI${i}">
+                    <input type="radio" id="spI${i}" class="mdl-radio__button" name="selectedPageIndex" value="${i}">
+                    <span class="mdl-radio__label">${page.replace(/_/g, ' ')}</span>
+                </label>
+                <hr />
+                `;
+            });
+            
+            // Add close handler
+            addMessageHandler("closeRecentPageDialog", ()=>rw.ui.recentlyVisitedSelector.close());
+
+            // Add continue handler
+            addMessageHandler("RecentPageDialogSel`*", m=>{
+                let selectedI = m.split("`")[1];
+                callback(recentlyVisited[selectedI]); // send callback
+            });
+            
+            // Now show dialog
+            rw.ui.recentlyVisitedSelector.init(mdlContainers.generateContainer(`
+            [[[[include recentPageSelect.html]]]]
+            `, 420, 500)); // 420 hahahaha
+            rw.ui.recentlyVisitedSelector.dialog.showModal();
+        },
+
+        "close" : () => {
+            // Close dialog
+            $(rw.ui.recentlyVisitedSelector.dialog)
+            .addClass("closeAnimate")
+            .on("webkitAnimationEnd", ()=>{
+                // Animation finished
+                rw.ui.recentlyVisitedSelector.dialog.close();
+            });
+        }
     }
 }

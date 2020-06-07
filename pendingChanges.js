@@ -1,6 +1,9 @@
 rw.PendingChangesReview = {
     "reviewPage" : ()=> {
-        // Pending changes buttons and warning (ONLY on review pages) and NOT on re-review pages just yet, this is todo
+        // Check config if disabled
+        if (rw.config.rwDisablePendingChanges == "disable") return; // if disabled, exit
+        
+        // Pending changes buttons and warning (ONLY on review pages) 
         if (($("#mw-fr-reviewform").length > 0) && !($("#mw-fr-reviewformlegend").text().includes("Re-review"))) {
             rw.info.featureRestrictPermissionLevel("reviewer", ()=>{ // Restrict to pending changes reviewers
                 // Add to accept header
@@ -152,7 +155,7 @@ rw.PendingChangesReview = {
                                     };
                                     if (x.status == 302) {
                                         // Redirect, so success!
-                                        dialogEngine.dialog.close();
+                                        dialogEngine.closeDialog();
                                         successHandler();
                                     } else {
                                         // Oops, likely error (DENY ONLY)
@@ -273,13 +276,13 @@ rw.PendingChangesReview = {
                 </span>
                 `,
                 "GO TO LATEST REVISION", ()=>{
-                    dialogEngine.dialog.close();
+                    dialogEngine.closeDialog();
                     rw.ui.loadDialog.show("Redirecting...");
                     // Redirect to latest version
                     redirect("https://en.wikipedia.org/w/index.php?title="+ encodeURIComponent(mw.config.get("wgRelevantPageName")) +"&diff="+ latestRId +"&oldid="+ parentRId +"&diffmode=source#redirectLatestRevision");
                 },
                 "CONTINUE ANYWAY", ()=>{
-                    dialogEngine.dialog.close();
+                    dialogEngine.closeDialog();
                     callback();
                 }, isFailedRevert? 135 : 115); // continue anyway: close and callback
             }

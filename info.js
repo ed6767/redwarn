@@ -1,5 +1,15 @@
 // API calls ext.
 rw.info = { // API
+    // Rollback token
+    "rollbackToken" : "",
+    "getRollbackToken" : () => {
+        // Ran on load to allow for ?action=rollback request
+        rw.info.featureRestrictPermissionLevel("rollbacker", ()=>{
+            $.getJSON("https://en.wikipedia.org/w/api.php?action=query&meta=tokens&type=rollback&format=json", r=>{
+                rw.info.rollbackToken = r.query.tokens.rollbacktoken; // Set from response
+            });
+        },()=>{});
+    },
     "targetUsername": un=>{
         if (un) {return un;} // return username if defined
         return mw.config.values.wgRelevantUserName},
@@ -67,7 +77,7 @@ rw.info = { // API
                 },
                 
                 "DISMISS", ()=>{
-                    dialogEngine.dialog.close();
+                    dialogEngine.closeDialog();
                 }, 20));   
             }
             
@@ -80,7 +90,7 @@ rw.info = { // API
         let rwConfigTemplate = rw.config.templatePacks; // for restore
         // Handle templates (saved as b64 string)
         if (rw.config.templatePacks != null) rw.config.templatePacks = btoa(JSON.stringify(rw.config.templatePacks));
-
+        if (!noRedirect) rw.ui.loadDialog.show("Saving preferences...");
         // Write config to the users page and refresh
         let finalTxt = `
 /*<nowiki>                                                    
@@ -193,12 +203,18 @@ rw.config = `+ JSON.stringify(rw.config) +"; //</nowiki>"; // generate config te
             // let's continue
             // Returns date in == Month Year == format and matches
             let currentDateHeading = ((d)=>{return "== " + ['January','February','March','April','May','June','July','August','September','October','November','December'][d.getMonth()] + " " + (1900 + d.getYear()) + " =="})(new Date);
+            
+            // rev13, add alt without space
+            let currentAltDateHeading = ((d)=>{return "==" + ['January','February','March','April','May','June','July','August','September','October','November','December'][d.getMonth()] + " " + (1900 + d.getYear()) + "=="})(new Date);
+            
             let pageIncludesCurrentDate = wikiTxtLines.includes(currentDateHeading);
-            if (!pageIncludesCurrentDate) {
+            let pageIncludesCurrentAltDate = wikiTxtLines.includes(currentAltDateHeading);
+
+            if ((!pageIncludesCurrentDate) && (!pageIncludesCurrentAltDate)) {
                 // No warnings this month
                 callback(0, "No notices for this month.", revisionWikitext);
                 return;
-            }
+            } else if ((!pageIncludesCurrentDate) && (pageIncludesCurrentAltDate)) currentDateHeading = currentAltDateHeading; // If ==Date== is there but == Date == isn't, use ==Date== instead.
 
             let highestWarningLevel = 0; // Set highest to nothing so if there is a date title w nothing in then that will be reported 
             let thisMonthsNotices = ""; // for dialog
@@ -211,7 +227,7 @@ rw.config = `+ JSON.stringify(rw.config) +"; //</nowiki>"; // generate config te
 
                 // Check if it contains logo for each level
                 thisMonthsNotices += wikiTxtLines[i]; // Add to this months
-                if (wikiTxtLines[i].includes("File:Stop hand nuvola.svg")) { // Level 4 warning
+                if (wikiTxtLines[i].match(/(File:|Image:)Stop hand nuvola.svg/gi)) { // Level 4 warning
                     // This is the highest warning level. We can leave now
                     highestWarningLevel = 4;
                     break; // exit the loop
@@ -219,18 +235,18 @@ rw.config = `+ JSON.stringify(rw.config) +"; //</nowiki>"; // generate config te
 
                 // Not using elseif in case of formatting ext..
 
-                if (wikiTxtLines[i].includes("File:Nuvola apps important.svg")) { // Level 3 warning
+                if (wikiTxtLines[i].match(/(File:|Image:)(Nuvola apps important.svg|Ambox warning pn.svg)/gi)) { // Level 3 warning
                     highestWarningLevel = 3; // No need for if check as highest level exits
                 }
 
-                if (wikiTxtLines[i].includes("File:Information orange.svg")) { // Level 2 warning
+                if (wikiTxtLines[i].match(/(File:|Image:)Information orange.svg/gi)) { // Level 2 warning 
                     if (highestWarningLevel < 3) {
                         // We can set
                         highestWarningLevel = 2;
                     }
                 }
 
-                if (wikiTxtLines[i].includes("File:Information.svg")) { // Level 1 notice
+                if (wikiTxtLines[i].match(/(File:|Image:)Information.svg/gi)) { // Level 1 notice
                     if (highestWarningLevel < 2) {
                         // We can set
                         highestWarningLevel = 1;
@@ -276,7 +292,16 @@ rw.config = `+ JSON.stringify(rw.config) +"; //</nowiki>"; // generate config te
             // Returns date in == Month Year == format and matches
             let currentDateHeading = ((d)=>{return "== " + ['January','February','March','April','May','June','July','August','September','October','November','December'][d.getMonth()] + " " + (1900 + d.getYear()) + " =="})(new Date);
             let pageIncludesCurrentDate = wikiTxtLines.includes(currentDateHeading);
+            // rev13, add alt without space (i.e ==Month Year==)
+            let currentAltDateHeading = ((d)=>{return "==" + ['January','February','March','April','May','June','July','August','September','October','November','December'][d.getMonth()] + " " + (1900 + d.getYear()) + "=="})(new Date);
+            let pageIncludesCurrentAltDate = wikiTxtLines.includes(currentAltDateHeading);
+
+            if ((!pageIncludesCurrentDate) && (pageIncludesCurrentAltDate)) { // If ==Date== is there but == Date == isn't, use ==Date== instead.
+                currentDateHeading = currentAltDateHeading;
+                pageIncludesCurrentDate = true;
+            } 
             
+            // Let's continue :)
             if (underDate) {
                 if (pageIncludesCurrentDate) {
                     // Locate and add text in section
@@ -360,7 +385,7 @@ rw.config = `+ JSON.stringify(rw.config) +"; //</nowiki>"; // generate config te
     },
 
     // Used for rollback
-    "isLatestRevision" : (name, revID, callback) => { // callback(username) only if successful!! in other cases, will REDIRECT to latest revison compare page
+    "isLatestRevision" : (name, revID, callback, noRedirectCallback) => { // callback(username) only if successful!! in other cases, will REDIRECT to latest revison compare page
         // Check if revsion is the latest revision
         $.getJSON("https://en.wikipedia.org/w/api.php?action=query&prop=revisions&titles="+ encodeURIComponent(name) +"&rvslots=*&rvprop=ids%7Cuser&formatversion=2&format=json", r=>{
             // We got the response
@@ -372,6 +397,9 @@ rw.config = `+ JSON.stringify(rw.config) +"; //</nowiki>"; // generate config te
                 callback(latestUsername, latestRId);
             } else {
                 // Nope :(
+                // Check for a noredirect callback, if so, call and return
+                if (noRedirectCallback != null) {noRedirectCallback(); return;}
+                
                 // Load the preview page of the latest one
                 try {if (dialogEngine.dialog.open) {return;}} catch (error) {} // DO NOT REDIRECT IF DIALOG IS OPEN.
                 redirect("https://en.wikipedia.org/w/index.php?title="+ encodeURIComponent(name) +"&diff="+ latestRId +"&oldid="+ parentRId +"&diffmode=source#redirectLatestRevision");

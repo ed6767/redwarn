@@ -12,43 +12,38 @@
     <h5>Edit source</h5>
     <i>Create your template below. For more help, see the <a href="https://en.wikipedia.org/wiki/WP:REDWARN/QTPACKS" target="_blank">help page.</a></i>
     <div class="mdl-textfield mdl-js-textfield" style="width: 100%;">
-        <textarea class="mdl-textfield__input" type="text" rows= "3" id="content">`+ selectedTemplate.content +`</textarea>
+        <textarea class="mdl-textfield__input" type="text" rows="5" id="content" style="font-family: monospace;">`+ selectedTemplate.content +`</textarea>
         <label class="mdl-textfield__label" for="content">Content</label>
     </div>
 </div>
 <!-- CLOSE AND CREATE BUTTONS -->
 <span style="float:right;">
-    <button class="mdl-button mdl-js-button mdl-js-ripple-effect" onclick="close();">
-        EXIT <!-- TO ADD: you have unsaved changes -->
+    <button id="exitBtn" class="mdl-button mdl-js-button mdl-js-ripple-effect">
+        EXIT
     </button>
     &nbsp;
-    <button id="submitBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" onclick="test();">
+    <button id="testBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
         TEST
     </button>
     &nbsp;
-    <button id="submitBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" onclick="save();">
+    <button id="saveBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
         SAVE CHANGES
     </button>
 </span>
 
 <script>
-    // ALL CODE HERE IS TEMP.
-    function close() {
-        save();
-        window.parent.postMessage('closeDialog', '*');
-       // window.parent.postMessage('qTClosedDialog', '*');
-    }
+    // Add handlers
+    $("#exitBtn").click(()=>{
+        window.parent.postMessage('qTClose\`'+ btoa($("#title").val()) + "\`" + btoa($("#about").val()) + "\`" + btoa($("#content").val()), '*');
+    });
 
-    function save() {
+    $("#testBtn").click(()=>{
+        // Test changes
+        window.parent.postMessage('qTTest\`'+ btoa($("#title").val()) + "\`" + btoa($("#about").val()) + "\`" + btoa($("#content").val()), '*');
+    });
+
+    $("#saveBtn").click(()=>{
         // Save changes here
         window.parent.postMessage('qTSave\`'+ btoa($("#title").val()) + "\`" + btoa($("#about").val()) + "\`" + btoa($("#content").val()), '*');
-    }
-
-    function test() {
-        save();
-        setTimeout(()=>{
-            // Submit after 2.5 seconds
-            alert("In rev13, here you will be able to test your templates. However, as this is a preview feature, for now you can test by reopening the screen outside of edit mode. Sorry!");
-        },2500);
-    }
+    });
 </script>

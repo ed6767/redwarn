@@ -1,57 +1,142 @@
-rw.rollback = { // Rollback features
+rw.rollback = { // Rollback features - this is where the business happens, people!
+
+    "getRollbackrevID" : ()=>{ // Get the revision ID of what we want to rollback
+        let isNLatest = $("#mw-diff-ntitle1").text().includes("Latest revision");
+        let isOLatest = $("#mw-diff-otitle1").text().includes("Latest revision"); 
+        if (isNLatest) {
+            // Return the revID of the edit on the right
+            return $('#mw-diff-ntitle1 > strong > a').attr('href').split('&')[1].split('=')[1];
+        } else if (isOLatest) {
+            return $('#mw-diff-otitle1 > strong > a').attr('href').split('&')[1].split('=')[1];
+        } else {
+            // BUG!
+            rw.ui.confirmDialog("A very weird error occured. (rollback getRollbackRevID failed via final else!)",
+            "REPORT BUG", ()=>rw.ui.sendFeedback("rollback getRollbackRevID failed via final else! related URL: "+ window.location.href) ,
+            "", ()=>{}, 0);
+        }
+    },
+
     "preview" : () => { // Redirect to the preview of the rollback in a new tab (compare page)
-        rw.visuals.toast.show("Loading preview...");
+        rw.ui.loadDialog.show("Loading preview...");
         // Check if latest, else redirect
-        rw.info.isLatestRevision(mw.config.get("wgRelevantPageName"), $('#mw-diff-ntitle1 > strong > a').attr('href').split('&')[1].split('=')[1], un=>{
+        rw.info.isLatestRevision(mw.config.get("wgRelevantPageName"), rw.rollback.getRollbackrevID(), un=>{
             // Fetch latest revision not by user
             rw.info.latestRevisionNotByUser(mw.config.get("wgRelevantPageName"), un, (content, summary, rID) => {
                 // Got it! Now open preview dialog
                
                 // Add handler for when page loaded
                 let url = "https://en.wikipedia.org/w/index.php?title="+ mw.config.get("wgRelevantPageName") +"&diff="+ rID +"&oldid="+ mw.util.getParamValue("diff") +"&diffmode=source#rollbackPreview";
-                redirect(url, true);
+                redirect(url); // goto in current tab
             });
         });
     },
 
-    "apply" : (reason) => {
+    "apply" : (reason, callback, defaultWarnIndex)=> { // if callback set, no UW prompt will be shown, but a callback instead
+        
+        // Now do
         // bug fix rev10, get revid from html
-        // TODO: if has rollback perms and set to use in settings, use that - prompt first time
+        // added rev13 if has rollback perms and set to use in settings, use that - prompt first time
         rw.visuals.toast.show("Reverting...");
-        rw.info.isLatestRevision(mw.config.get("wgRelevantPageName"), $('#mw-diff-ntitle1 > strong > a').attr('href').split('&')[1].split('=')[1], (un, crID)=>{
-            // Fetch latest revision not by user
-            rw.info.latestRevisionNotByUser(mw.config.get("wgRelevantPageName"), un, (content, summary, rID) => {
-                // Got it! Now set page content to summary
-                // Push UNDO using CSRF token
-                $.post("https://en.wikipedia.org/w/api.php", {
-                    "action": "edit",
-                    "format": "json",
-                    "token" : mw.user.tokens.get("csrfToken"),
-                    "title" : mw.config.get("wgRelevantPageName"),
-                    "summary" : summary + ": " + reason + " [[WP:REDWARN|(RedWarn "+ rw.version +")]]", // summary sign here
-                    "undo": crID, // current
-                    "undoafter": rID // restore version
-                }).done(dt => {
-                    // We done. Check for errors, then callback appropriately
-                    if (!dt.edit) {
-                        // Error occured or other issue
-                        console.error(dt);
-                        rw.visuals.toast.show("Sorry, there was an error, likely an edit conflict. Your rollback has not been applied.");
-                    } else {
-                        // Success! Now show warning dialog but w correct info
-                        rw.ui.beginWarn(false, un, mw.config.get("wgRelevantPageName"));
-                        rw.visuals.toast.show("Rollback complete.", "DON'T WARN AND VIEW", ()=>{
-                            rw.info.isLatestRevision(mw.config.get('wgRelevantPageName'), 0, ()=>{});
-                        }, 5000); // clicking undo takes to the closest revision, has to be here to overlay the dialog
-                    }
+        rw.info.isLatestRevision(mw.config.get("wgRelevantPageName"), rw.rollback.getRollbackrevID(), (un, crID)=>{
+            // Set handlers for each method
+            let pseudoRollbackCallback = ()=>{ // pseudoRollback 
+                // Fetch latest revision not by user
+                rw.info.latestRevisionNotByUser(mw.config.get("wgRelevantPageName"), un, (content, summary, rID) => {
+                    // Got it! Now set page content to summary
+                    // Push UNDO using CSRF token
+                    $.post("https://en.wikipedia.org/w/api.php", {
+                        "action": "edit",
+                        "format": "json",
+                        "token" : mw.user.tokens.get("csrfToken"),
+                        "title" : mw.config.get("wgRelevantPageName"),
+                        "summary" : summary + ": " + reason + " [[WP:REDWARN|(RedWarn "+ rw.version +")]]", // summary sign here
+                        "undo": crID, // current
+                        "undoafter": rID // restore version
+                    }).done(dt => {
+                        // We done. Check for errors, then callback appropriately
+                        if (!dt.edit) {
+                            // Error occured or other issue
+                            console.error(dt);
+                            rw.visuals.toast.show("Sorry, there was an error, likely an edit conflict. Your rollback has not been applied.");
+                        } else {
+                            // Success!
+
+                            // If callback set, call it and exit, else continue
+                            if (callback != null) {callback(); return;}
+
+                            // Now show warning dialog but w correct info
+                            rw.ui.beginWarn(false, un, mw.config.get("wgRelevantPageName"), null, null, null, (defaultWarnIndex != null ? defaultWarnIndex : null));
+                            rw.visuals.toast.show("Rollback complete.", "DON'T WARN AND VIEW", ()=>{
+                                rw.info.isLatestRevision(mw.config.get('wgRelevantPageName'), 0, ()=>{});
+                            }, 5000); // clicking undo takes to the closest revision, has to be here to overlay the dialog
+                        }
+                    });
                 });
-            });
+            };
+            
+            let rollbackCallback = ()=>{ // using rollback API
+                // PUSH ROLLBACK
+                $.post("https://en.wikipedia.org/w/api.php", {
+                        "action": "rollback",
+                        "format": "json",
+                        "token" : rw.info.rollbackToken,
+                        "title" : mw.config.get("wgRelevantPageName"),
+                        "summary" : "Rollback edit(s) by [[Special:Contributions/"+ un +"|"+ un +"]] ([[User_talk:"+ un +"|talk]]): " + reason + " [[WP:REDWARN|(RedWarn "+ rw.version +")]]", // summary sign here
+                        "user": un // rollback user
+                    }).done(dt => {
+                        // We done. Check for errors, then callback appropriately
+                        if (!dt.rollback) {
+                            // Error occured or other issue
+                            console.error(dt);
+                            rw.visuals.toast.show("Sorry, there was an error, likely an edit conflict. Your rollback has not been applied.");
+                        } else {
+                            // Success!
+
+                            // If callback set, call it and exit, else continue
+                            if (callback != null) {callback(); return;}
+
+                            // Now show warning dialog but w correct info
+                            rw.ui.beginWarn(false, un, mw.config.get("wgRelevantPageName"), null, null, null, (defaultWarnIndex != null ? defaultWarnIndex : null));
+                            rw.visuals.toast.show("Rollback complete.", "DON'T WARN AND VIEW", ()=>{
+                                rw.info.isLatestRevision(mw.config.get('wgRelevantPageName'), 0, ()=>{});
+                            }, 5000); // clicking undo takes to the closest revision, has to be here to overlay the dialog
+                        }
+                    });
+            };
+
+            // Check config for rollback perms
+            rw.info.featureRestrictPermissionLevel("rollbacker", ()=>{
+                // Check if config is set or not
+                if (rw.config.rollbackMethod == null) {
+                    rw.ui.confirmDialog(`
+                    You have rollback permissions!
+                    Would you like to use the faster rollback API in future or continue using a rollback-like setting?
+                    You can change this in your preferences at any time.`,
+                    "USE ROLLBACK", ()=>{
+                        dialogEngine.closeDialog();
+                        rw.config.rollbackMethod = "rollback";
+                        rw.info.writeConfig(true, ()=>rollbackCallback()); // save config and callback
+                    },
+                    "KEEP USING ROLLBACK-LIKE",()=>{
+                        dialogEngine.closeDialog();
+                        rw.config.rollbackMethod = "pseudoRollback";
+                        rw.info.writeConfig(true, ()=>pseudoRollbackCallback()); // save config and callback
+                    },45);
+                } else {
+                    // Config set, complete callback - remember, this is feature restricted so we won't get here without RB perms
+                    if (rw.config.rollbackMethod == "rollback") { // Rollback selected
+                        rollbackCallback(); // Do rollback
+                    } else {
+                        pseudoRollbackCallback(); // rollback-like
+                    }
+                }
+            }, ()=>pseudoRollbackCallback()); // if no perms follow pseudo rollback
         });
     },
 
     "restore" : (revID, reason) => {
         // Restore revision by ID
-        rw.ui.loadDialog.show("Restoring...", false, false, 4000);
+        rw.ui.loadDialog.show("Restoring...");
         // Ask API for latest revision
         $.getJSON("https://en.wikipedia.org/w/api.php?action=query&prop=revisions&titles="+ encodeURIComponent(mw.config.get("wgRelevantPageName")) +"&rvslots=*&rvprop=ids%7Cuser&formatversion=2&format=json", r=>{
             // We got the response
@@ -66,7 +151,7 @@ rw.rollback = { // Rollback features
                         "format": "json",
                         "token" : mw.user.tokens.get("csrfToken"),
                         "title" : mw.config.get("wgRelevantPageName"),
-                        "summary" : summary + ": " + reason + " [[WP:REDWARN|(RedWarn "+ rw.version +")]]", // summary sign here
+                        "summary" : summary + (reason != null ? ": " + reason : "") + " [[WP:REDWARN|(RedWarn "+ rw.version +")]]", // summary sign here
                         "undo": crID, // current
                         "undoafter": revID // restore version
                     }).done(dt => {
@@ -85,7 +170,7 @@ rw.rollback = { // Rollback features
     },
 
     "promptRollbackReason" : reason=> {
-        rw.info.isLatestRevision(mw.config.get("wgRelevantPageName"), $('#mw-diff-ntitle1 > strong > a').attr('href').split('&')[1].split('=')[1],un=>{ // validate is latest
+        rw.info.isLatestRevision(mw.config.get("wgRelevantPageName"), rw.rollback.getRollbackrevID(),un=>{ // validate is latest
             // Show dialog then rollback
             // Add submit handler
 
@@ -101,7 +186,7 @@ rw.rollback = { // Rollback features
 
     "promptRestoreReason" : revID=> {
         // Prompt for reason to restore. very sim to rollback reason
-        let reason = ""; // Needed for rollback reason page
+        let reason = ""; // Needed for rollback reason page - do not remove
 
         // Add submit handler
         addMessageHandler("reason`*", rs=>rw.rollback.restore(revID, rs.split("`")[1])); // When reason recieved, submit rollback
@@ -116,7 +201,7 @@ rw.rollback = { // Rollback features
     "welcomeRevUsr" :() => {
         // Send welcome to user who made most recent revision
         rw.visuals.toast.show("Please wait...", false, false, 1000);
-        rw.info.isLatestRevision(mw.config.get("wgRelevantPageName"), $('#mw-diff-ntitle1 > strong > a').attr('href').split('&')[1].split('=')[1], un=>{
+        rw.info.isLatestRevision(mw.config.get("wgRelevantPageName"), rw.rollback.getRollbackrevID(), un=>{
             // We got the username, send the welcome
             rw.quickTemplate.openSelectPack(un);
         });
@@ -129,6 +214,9 @@ rw.rollback = { // Rollback features
         // Load icons from config
         // ? config : default
         // This is a mess :p
+        let isLatest = $("#mw-diff-ntitle1").text().includes("Latest revision"); // is this the latest revision diff page?
+        let isLeftLatest = $("#mw-diff-otitle1").text().includes("Latest revision"); // is the left side the latest revision? (rev13 bug fix)
+
         let rollBackVandal = rw.config['rollBackVandalIcon'] != null ? rw.config['rollBackVandalIcon'] : "delete_forever"; // vandal
         let rollBackRM = !(rw.config['rollBackRMIcon'] == null) ? rw.config['rollBackRMIcon'] : "format_indent_increase"; // rm
         let rollBackNC = !(rw.config['rollBackNCIcon'] == null) ? rw.config['rollBackNCIcon'] : "work_outline"; // nc
@@ -137,12 +225,12 @@ rw.rollback = { // Rollback features
         let rollBackPrev = !(rw.config['rollBackPrevIcon'] == null) ? rw.config['rollBackPrevIcon'] : "compare_arrows"; // prev
         let wlRU = !(rw.config['wlRUIcon'] == null) ? rw.config['wlRUIcon'] : "library_add"; // quick template revision user
         let currentRevIcons = `
-        <div id="rollBackVandal" class="icon material-icons"><span style="cursor: pointer; font-size:28px; padding-right:5px; color:red;" onclick="rw.rollback.apply('vandalism');">`+ rollBackVandal +`</span></div>
+        <div id="rollBackVandal" class="icon material-icons"><span style="cursor: pointer; font-size:28px; padding-right:5px; color:red;" onclick="rw.rollback.apply('vandalism', null, 0);">`+ rollBackVandal +`</span></div>
         <div class="mdl-tooltip mdl-tooltip--large" for="rollBackVandal">
             Quick rollback vandalism
         </div>
 
-        <div id="rollBackRM" class="icon material-icons"><span style="cursor: pointer; font-size:28px; padding-right:5px; color:orange;" onclick="rw.rollback.apply('unexplained content removal');">`+ rollBackRM +`</span></div>
+        <div id="rollBackRM" class="icon material-icons"><span style="cursor: pointer; font-size:28px; padding-right:5px; color:orange;" onclick="rw.rollback.apply('unexplained content removal', null, 3);">`+ rollBackRM +`</span></div>
         <div class="mdl-tooltip mdl-tooltip--large" for="rollBackRM">
             Quick rollback unexplained content removal
         </div>
@@ -175,11 +263,9 @@ rw.rollback = { // Rollback features
 
         // RESTORE THIS VERSION ICONS. DO NOT FORGET TO CHANGE BOTH FOR LEFT AND RIGHT
 
-        let isLatest = $("#mw-diff-ntitle1").text().includes("Latest revision"); // is this the latest revision diff page?
-
-        // On left side (always restore)
+        // On left side
         // DO NOT FORGET TO CHANGE BOTH!!
-        $('.diff-otitle').prepend(`
+        $('.diff-otitle').prepend(isLeftLatest ? currentRevIcons : `
         <div id="rOld1" class="icon material-icons"><span style="cursor: pointer; font-size:28px; padding-right:5px; color:purple;"
             onclick="rw.rollback.promptRestoreReason($('#mw-diff-otitle1 > strong > a').attr('href').split('&')[1].split('=')[1]);"> <!-- the revID on left -->
                 history
@@ -209,5 +295,150 @@ rw.rollback = { // Rollback features
                 rw.visuals.register(item); 
             } 
         },100);
+    },
+
+
+    // CONTRIBS PAGE
+
+    "contribsPageIcons" : ()=>{ // Adds rollback/restore links
+        
+        // For each (current) tag
+        $("span.mw-uctop").each((i, el)=>{
+            // Add rollback options (${i} inserts i at that point to ensure it is a unique ID)
+            $(el).html(`
+            <span id="rw-currentRev${i}" style="cursor:default"> <!-- Wrapper -->
+                ${rw.logoShortHTML}
+                <span style="font-family:Roboto;font-weight:400;"> &nbsp; <!-- Styling container -->
+                    <!-- Links -->
+                    <a style="color:green;cursor:pointer;" id="rw-currentRevPrev${i}" onclick="rw.rollback.contribsPageRollbackPreview(${i});">prev</a> &nbsp;
+                    <a style="color:red;cursor:pointer;" id="rw-currentRevRvv${i}" onclick="rw.rollback.contribsPageRollbackVandal(${i});">rvv</a> &nbsp;
+                    <a style="color:blue;cursor:pointer;" id="rw-currentRevRb${i}" onclick="rw.rollback.contribsPageRollback(${i});">rb</a>
+
+                    <!-- Tooltips -->
+                    <div class="mdl-tooltip" data-mdl-for="rw-currentRevPrev${i}">
+                        Preview Rollback
+                    </div>
+                    <div class="mdl-tooltip" data-mdl-for="rw-currentRevRvv${i}">
+                        Quick Rollback Vandalism
+                    </div>
+                    <div class="mdl-tooltip" data-mdl-for="rw-currentRevRb${i}">
+                        Rollback
+                    </div>
+                </span>
+            </span>
+            `);
+        });
+
+        // Now register tooltips
+        setTimeout(()=>{
+            // Register all tooltips after 50ms (just some processing time)
+            for (let item of document.getElementsByClassName("mdl-tooltip")) {
+                rw.visuals.register(item); 
+            } 
+        },100);
+    },
+
+    "contribsPageRollbackPreview" : i=>{
+        // Get revision ID
+        let revID = $("#rw-currentRev"+ i).closest("li").attr("data-mw-revid");
+        let pageName =  $("#rw-currentRev"+ i).closest("li").find("a.mw-changeslist-date").attr("title");
+        console.log(revID);
+        console.log(pageName);
+        rw.ui.loadDialog.show("Loading preview...");
+        // Now verify is still latest
+        rw.info.isLatestRevision(pageName, revID, un=>{
+            // Is latest revision! Let's continue
+            // Fetch latest revision not by user
+            rw.info.latestRevisionNotByUser(pageName, un, (content, summary, rID) => {
+                // Assemble URL
+                let url = "https://en.wikipedia.org/w/index.php?title="+ pageName +"&diff="+ rID +"&oldid="+ revID +"&diffmode=source#rollbackPreview";
+                redirect(url, true); // open URL in new tab
+                rw.ui.loadDialog.close(); // close load dialog
+            });
+        }, ()=>{
+            rw.ui.loadDialog.close(); // close load dialog
+            // Isn't the latest revision, set note to match
+            $("#rw-currentRev"+ i).html(
+                `<span style="font-family:Roboto;color:red;">No longer the latest revision.</span>`
+            );
+        });
+    },
+
+    "contribsPageRollbackVandal" : i=>{
+        // Get revision ID
+        let revID = $("#rw-currentRev"+ i).closest("li").attr("data-mw-revid");
+        let pageName =  $("#rw-currentRev"+ i).closest("li").find("a.mw-changeslist-date").attr("title");
+        console.log(revID);
+        console.log(pageName);
+        
+        $("#rw-currentRev"+ i).html(
+            `<span style="font-family:Roboto;color:green;">reverting...</span>`
+        );
+        
+        // Now verify is still latest
+        rw.info.isLatestRevision(pageName, revID, un=>{
+            // Is latest revision! Let's continue
+            
+            // Overwrite function and values used on diff pages as we aren't on a diff page
+            rw.rollback.getRollbackrevID = ()=>{return revID;}; 
+            mw.config.values.wgRelevantPageName = pageName;
+            rw.rollback.apply("vandalism (from contribs page)", ()=>{ // apply the rollback
+                // Rollback complete!
+                $("#rw-currentRev"+ i).html(
+                    `<span style="font-family:Roboto;color:green;">reverted!</span>`
+                );
+            }); 
+        }, ()=>{
+            // Isn't the latest revision, set note to match
+            $("#rw-currentRev"+ i).html(
+                `<span style="font-family:Roboto;color:red;">No longer the latest revision.</span>`
+            );
+        });
+    },
+
+    "contribsPageRollback" : i=>{
+        // First, prompt for reason
+        let reason = ""; // Needed for rollback reason page - do not remove
+
+        // Add submit handler
+        addMessageHandler("reason`*", rs=>{ // On submit
+            let rollbackReason = rs.split("`")[1];
+            // Get revision ID
+            let revID = $("#rw-currentRev"+ i).closest("li").attr("data-mw-revid");
+            let pageName =  $("#rw-currentRev"+ i).closest("li").find("a.mw-changeslist-date").attr("title");
+            console.log(revID);
+            console.log(pageName);
+            
+            $("#rw-currentRev"+ i).html(
+                `<span style="font-family:Roboto;color:green;">reverting...</span>`
+            );
+            
+            // Now verify is still latest
+            rw.info.isLatestRevision(pageName, revID, un=>{
+                // Is latest revision! Let's continue
+                
+                // Overwrite function and values used on diff pages as we aren't on a diff page
+                rw.rollback.getRollbackrevID = ()=>{return revID;}; 
+                mw.config.values.wgRelevantPageName = pageName;
+                rw.rollback.apply(reason + " (from contribs page)", ()=>{ // apply the rollback
+                    // Rollback complete!
+                    $("#rw-currentRev"+ i).html(
+                        `<span style="font-family:Roboto;color:green;">reverted!</span>`
+                    );
+                }); 
+            }, ()=>{
+                // Isn't the latest revision, set note to match
+                $("#rw-currentRev"+ i).html(
+                    `<span style="font-family:Roboto;color:red;">No longer the latest revision.</span>`
+                );
+            });
+        });
+
+        // CREATE DIALOG
+        // MDL FULLY SUPPORTED HERE (container). 
+        dialogEngine.create(mdlContainers.generateContainer(`
+        [[[[include rollbackReason.html]]]]
+        `, 500, 120)).showModal(); // 500x120 dialog, see rollbackReason.html for code
+        
     }
 };

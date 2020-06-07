@@ -84,7 +84,7 @@ rw.multiAct = { // Multi action screen
                         <td>
                         <a href="#" onclick="window.parent.postMessage(\`summaries `+ usr +`\`);"><strong>` + userInfo.edits + ` edit` + (userInfo.edits > 1 ? "s" : "") +`</strong></a><br/>
                         </td>
-                        <td id="editCount-`+usr+`">—
+                        <td id="editCount-`+usr+`">-
                         <script>
                             // Adds handler for this edit count
                             addMessageHandler("editCount-`+ usr +`\`*", e=>{
@@ -118,8 +118,8 @@ rw.multiAct = { // Multi action screen
                             });
                         </script>
                         </td>
-                        <td>—</td> <!-- text to add -->
-                        <td>—</td> <!-- under date -->
+                        <td>-</td> <!-- text to add -->
+                        <td>-</td> <!-- under date -->
                         </tr>
                     </tr>
                     `;
@@ -134,7 +134,7 @@ rw.multiAct = { // Multi action screen
                         <div style="height:400px;overflow:auto;">
                         `+ revList +
                         `</div>`,
-                        "CLOSE", ()=>dialogEngine.dialog.close(),
+                        "CLOSE", ()=>dialogEngine.closeDialog(),
                         "", ()=>{}, 500);
                     });
 
@@ -170,13 +170,13 @@ rw.multiAct = { // Multi action screen
                         rw.ui.confirmDialog(`
                         Are you sure you want to complete actions for <b>`+ userCount + ` user` + (userCount > 1 ? "s" : "") +`</b>?`,
                         "CONFIRM", ()=>{
-                            dialogEngine.dialog.close(); // close dialog
+                            dialogEngine.closeDialog(); // close dialog
                             rw.ui.loadDialog.show("Editing talk pages..."); // loading dialog
                             rw.multiAct.dialog.getElementsByTagName("iframe")[0].contentWindow.postMessage(
                                 "confirmSelected", '*'); // Set the wheels in motion
                         },
                         "CANCEL", ()=>{
-                            dialogEngine.dialog.close(); // close dialog on cancel
+                            dialogEngine.closeDialog(); // close dialog on cancel
                         }
                         ,0);
                     });
@@ -209,7 +209,7 @@ rw.multiAct = { // Multi action screen
                                     rw.ui.confirmDialog(`
                                     Actions complete!`,
                                     "CLOSE", ()=>{
-                                        dialogEngine.dialog.close(); // close dialog
+                                        dialogEngine.closeDialog(); // close dialog
                                     },
                                     "", ()=>{},0);
                                 } else {
@@ -285,7 +285,7 @@ rw.multiAct = { // Multi action screen
                             `+parsed+`
                         </div>
                     `,
-                    "CLOSE", ()=>dialogEngine.dialog.close(),
+                    "CLOSE", ()=>dialogEngine.closeDialog(),
                     "", ()=>{}, 500);
                 });
             });
@@ -364,7 +364,7 @@ rw.multiAct = { // Multi action screen
                 rw.info.getUserEditCount(usernames[i], cI=>{
                     // Push to iframe
                     // Set c to blank space if edit count undefined or edit count with number sorted if is
-                    let c = cI == null ? "—" : cI.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","); // regex adds commas to number to make more readable
+                    let c = cI == null ? "-" : cI.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","); // regex adds commas to number to make more readable
                     rw.multiAct.dialog.getElementsByTagName("iframe")[0].contentWindow.postMessage("editCount-"+ usernames[i] + "`" + c, '*');
                     
                     // Make sure there wasn't an issue, if so redo, and if redo fails just continue
@@ -389,7 +389,7 @@ rw.multiAct = { // Multi action screen
             rw.ui.confirmDialog(`
             Sorry, but to prevent misuse you have to be an extended confirmed user to use the multiple action tool. Check back later!
             `,
-            "OKAY", ()=>dialogEngine.dialog.close(),
+            "OKAY", ()=>dialogEngine.closeDialog(),
             "", ()=>{}, 23);
         });
     }

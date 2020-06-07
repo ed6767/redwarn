@@ -23,10 +23,18 @@
         <i>Click "edit" to create and begin editing your template.</i>
     </div>
     <hr />
-    <!-- this will need a redesign -->
+    <!-- Publish button (only if pack by us)-->
+    <!-- Don't remove this line! `+ ((selectedPack.createdBy == mw.config.get("wgUserName")) ? ` -->
+    <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored" style="width:100%;" onclick="window.parent.postMessage('qTPublish', '*');">
+        MANAGE PUBLISHING
+    </button>
+    <br /><br />
+    <!-- DON'T REMOVE THIS LINE ` : ``) + ` -->
+
     <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored" style="width:100%;background-color:red;" onclick="window.parent.postMessage('qTdeletePack', '*');">
         DELETE THIS PACK
     </button>
+    
     <!-- DON'T REMOVE THIS LINE! ` : "") + ` -->
     <!-- END EDIT MODE BUTTONS -->
 </div>
@@ -37,7 +45,7 @@
         CANCEL
     </button>
     <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" onclick="handleNext();">
-        ` + (editMode ? "EDIT" : "CONTINUE") + `
+        ${(editMode ? "EDIT" : "CONTINUE")}
     </button>
 </span>
 <script>
@@ -46,7 +54,9 @@
         if ($( "input:checked" ).length > 0) { // only continue if selection
             if ($( "input:checked" ).val() == "NEW") {
                 // Create new (qTNew Title Description)
-                window.parent.postMessage('qTNew\`'+ $( "#createNewTitle" ).val() + '\`' + $( "#createNewAbout" ).val(), '*');
+                if ($( "#createNewTitle" ).val().length > 2) { // if long enough
+                    window.parent.postMessage('qTNew\`'+ $( "#createNewTitle" ).val() + '\`' + $( "#createNewAbout" ).val(), '*');
+                }
             } else { // Else continue as normal (qTEdit in edit mode, qTNext normal)
                 window.parent.postMessage('qT`+ (editMode ? "Edit": "Next") +`\`'+ $( "input:checked" ).val(), '*');
             }

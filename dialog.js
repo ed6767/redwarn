@@ -5,7 +5,7 @@ var dialogEngine = {
         </div>
         `);
         // Add events
-        addMessageHandler("closeDialog", ()=>{dialogEngine.dialog.close();}); // closing
+        addMessageHandler("closeDialog", ()=>{dialogEngine.closeDialog();}); // closing
     },
     "create" : (content, noPad)=>{ 
        
@@ -26,5 +26,14 @@ var dialogEngine = {
         }
         
         return dialogEngine.dialog;
+    },
+    "closeDialog" : ()=> {
+        // Close the dialog (animated)
+        $(dialogEngine.dialog)
+        .addClass("closeAnimate")
+        .on("webkitAnimationEnd", ()=>{
+            // Animation finished
+            dialogEngine.dialog.close();
+        });
     }
 }

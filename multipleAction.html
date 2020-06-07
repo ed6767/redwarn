@@ -242,7 +242,7 @@
     let notAllFilled = false;
     $("tbody > tr").each((i, el)=>{ // for each row
       if ($(el).find("td:visible > label > input:checkbox:checked").length > 0) { // if checked
-         notAllFilled = ($($(el).find("td:visible")[5]).text() == "—") //If 6th col has blank symb, stop and notif
+         notAllFilled = ($($(el).find("td:visible")[5]).text() == "-") //If 6th col has blank symb, stop and notif
       }
     });
 

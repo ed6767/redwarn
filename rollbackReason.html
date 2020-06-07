@@ -1,9 +1,8 @@
 <!-- ROLLBACK REASON DIALOG -->
 <form id="newMsgForm" onsubmit="pushRollback();" action="#">
     <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width:100%">
-        <input class="mdl-textfield__input" type="text" name="rollbackReason" id="rollbackReason" value="`+ reason +`" minlength="3">
+        <input class="mdl-textfield__input" type="text" name="rollbackReason" id="rollbackReason" value="`+ reason +`">
         <label class="mdl-textfield__label" for="rollbackReason">Rollback Reason</label>
-        <span class="mdl-textfield__error">You must enter a longer rollback reason.</span>
         <div class="mdl-tooltip" for="rollbackReason">
             Enter a reason for this rollback
         </div>
@@ -26,15 +25,10 @@
                 }, {}); // form data
         
         let reason = data.rollbackReason;
-        if (reason.length < 3) {
-            return false;
-            // Too short
-        } else {
-            // Submit it
-            window.parent.postMessage('reason\\\`' + reason); // Push upstairs
-            window.parent.postMessage("closeDialog"); // We done here.
-            return false; // prevent redirect
-        }
+        // Submit it
+        window.parent.postMessage('reason\\\`' + reason); // Push upstairs
+        window.parent.postMessage("closeDialog"); // We done here.
+        return false; // prevent redirect
     }
 
     document.getElementById("rollbackReason").focus(); // focus on text box for quick rollback

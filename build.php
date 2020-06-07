@@ -20,7 +20,8 @@ function buildScript() {
     'whodunnit.js',
     'pendingChanges.js',
     'multiAct.js',
-    'quickTemplate.js'
+    'quickTemplate.js',
+    'pageProtect.js'
     ]; // List of files in order to import 
     foreach($jsFiles as $file) {
         $result .= file_get_contents($file) . "\n"; // get contents and append

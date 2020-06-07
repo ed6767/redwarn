@@ -10,6 +10,18 @@ window.onfocus = function(){
     windowFocused = true;  
 }
 
+// Array extention
+arrayMove = (arr, old_index, new_index) => {
+    if (new_index >= arr.length) {
+        var k = new_index - arr.length + 1;
+        while (k--) {
+            arr.push(undefined);
+        }
+    }
+    arr.splice(new_index, 0, arr.splice(old_index, 1)[0]);
+    return arr;
+}
+
 function waitForMDLLoad(cb) { // Used to wait for MDL load
     if(typeof componentHandler !== "undefined"){
         cb(); // callback
@@ -28,15 +40,28 @@ function redirect(url, inNewTab) {
 if (rw != null) {
     // Double init, rm the old version and hope for the best
     rw = {};
-    mw.notify("Warning! You have two versions of RedWarn installed at once! Please ensure that you only use one instance to prevent issues.");
+    mw.notify("Warning! You have two versions of RedWarn installed at once! Please edit your common.js or skin js files to ensure that you only use one instance to prevent issues.");
 }
 var rw = {
-    "version" : "rev12dev", // don't forget to change each version!
+    "version" : "rev13", // don't forget to change each version!
     "logoHTML" : `<span style="font-family:Roboto;font-weight: 300;text-shadow:2px 2px 4px #0600009e;"><span style="color:red">Red</span>Warn</span>`, // HTML of the logo
+    "logoShortHTML" : `<span style="font-family:Roboto;font-weight: 300;text-shadow:2px 2px 4px #0600009e;"><span style="color:red">R</span>W</span>`, // Short HTML of the logo
     "sign": ()=>{return atob("fn5+fg==")}, // we have to do this because mediawiki will swap this out with devs sig.
     "welcome": ()=> {return atob("e3tzdWJzdDpXZWxjb21lfX0=");}, // welcome template
     "welcomeIP": ()=> {return atob("e3tzdWJzdDp3ZWxjb21lLWFub259fQ==");}, // welcome IP template
     "sharedIPadvice" : ()=> {return atob("XG46e3tzdWJzdDpTaGFyZWQgSVAgYWR2aWNlfX0=");}, // if this is a shared...
+    
+    "makeID" : length=> {
+        // Generates a random string
+        var result           = '';
+        var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        var charactersLength = characters.length;
+        for ( var i = 0; i < length; i++ ) {
+            result += characters.charAt(Math.floor(Math.random() * charactersLength));
+        }
+        return result;
+    },
+
     "visuals" : {
         "init" : (callback) => {
             // Welcome message
@@ -56,6 +81,10 @@ var rw = {
                 <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
                 <script src="https://cdnjs.cloudflare.com/ajax/libs/dialog-polyfill/0.4.2/dialog-polyfill.min.js"></script> <!-- firefox being dumb -->
                 <script src="https://code.getmdl.io/1.3.0/material.min.js" id="MDLSCRIPT"></script>
+                <!-- Roboto Font -->
+                <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+
+                <!-- MDL AND CONTEXT MENU STYLES -->
                 <style>
                 /* Context menus */
                 .context-menu-list {
@@ -143,10 +172,11 @@ var rw = {
             }
             
 
-            // Now register all icons
-            for (let item of document.getElementsByClassName("mdl-tooltip")) {
-                rw.visuals.register(item); 
-            }
+            // Now register all tooltips
+            for (let item of document.getElementsByClassName("mdl-tooltip")) rw.visuals.register(item); 
+
+            // Now Register menu mdl-menu
+            for (let item of document.getElementsByClassName("mdl-menu")) rw.visuals.register(item); 
             
             // Now fade in container
             $("#rwPGIconContainer").fadeIn();
@@ -198,7 +228,7 @@ function addMessageHandler(msg, callback) { // calling more than once will just 
     Object.assign(messageHandlers, ((a,b)=>{let _ = {}; _[a]=b; return _;})(msg, callback)); // function ab returns a good formatted obj
 }
 
-window.onmessage = function(e){
+window.onmessage = e=>{
     if (messageHandlers[e.data]){messageHandlers[e.data]();} // Excecute handler if exact
     else { // We find ones that contain
         for (const evnt in messageHandlers) {
@@ -232,8 +262,6 @@ function initRW() {
                 rw.visuals.register(item); 
             }
             rw = {}; // WIPE OUT ENTIRE CLASS. We're not doing anything here.
-            // Notification
-            mw.notify("Thank you for you interest in moderating Wikipedia. However, you do not have permission to use RedWarn. Please refer to the user guide for more information.");
             // That's it
         });
 
@@ -241,6 +269,7 @@ function initRW() {
 
         // Load config and check if updated
         rw.info.getConfig(()=> {
+            rw.info.getRollbackToken(); // get rollback token
             rw.visuals.pageIcons(); // page icons once config loaded
             rw.ui.registerContextMenu(); // register context menus once config loaded
             if (rw.config.lastVersion != rw.version) {
@@ -253,24 +282,24 @@ function initRW() {
                     <b>RedWarn has just got a new update!</b> Would you like to read more about what's new?
                     `,
                     "READ SUMMARY", ()=>{
-                        dialogEngine.dialog.close();
+                        dialogEngine.closeDialog();
                         redirect("https://en.wikipedia.org/wiki/User:Ed6767/redwarn/bugsquasher#"+ rw.version + "_summary", true);
                     },
                     "LATER", ()=>{
-                        dialogEngine.dialog.close();
+                        dialogEngine.closeDialog();
                         rw.visuals.toast.show("You can read more later at RedWarn's page (WP:REDWARN)");
                     },168);
                 });
             }
             // TODO: probably fix this mess into a URL
+            // HERE REALLY REALLY NEEDS CLEANUP
                 // Check if a message is in URL (i.e edit complete ext)
             if(window.location.hash.includes("#noticeApplied-")) {
                 // Show toast w undo edit capabilities
                 // #noticeApplied-currentEdit-pastEdit
                 rw.visuals.toast.show("Message saved", "UNDO", ()=>{
-                    // Redirect to undo page mw.config.get("wgRelevantPageName");
-                    // TODO: maybe replace with custom page in future?
-                    window.location.href = "/w/index.php?title="+ mw.config.get("wgRelevantPageName") +"&action=edit&undoafter="+ window.location.hash.split("-")[2] +"&undo="+ window.location.hash.split("-")[1];
+                    // Just restore the version via rollback restore (this does a normal undo request)
+                    rw.rollback.restore(window.location.hash.split("-")[2], "Undo message addition (via toast)");
                 }, 7500);
             } else if (window.location.hash.includes("#redirectLatestRevision")) { // When latest revision loaded
                 rw.visuals.toast.show("Redirected to the lastest revision.", "BACK", ()=>window.history.back(), 4000); // When back clciked go back
@@ -297,45 +326,23 @@ function initRW() {
             } else if (window.location.hash.includes("#rollbackPreview")) {
                 // Rollback preview page
                 $('.mw-revslider-container').html(`
-                <style>
-                #mw-navigation {
-                    display: none;
-                }
-
-                .mw-indicators {
-                    display:none;
-                }
-
-                .mw-body {margin-left:0;}
-
-                .noprint { display: none; }
-                .diff-ntitle {display: none; }
-                .diff-otitle {display: none; }
-                </style>
                 <div style="padding-left:10px;">
                     <h2>This is a rollback preview</h2>
-                    To rollback, return to the original page.
+                    To rollback, use the buttons on the left side below. Using the restore revision button <b>will not</b> warn the user and won't redirect you to the latest revision.
                 </div>
-
-                <script>
-                // We're ready
-                window.parent.parent.postMessage('showBrwsrDialog');
-                </script>
-
                 <br>
                 `);
 
                 $('.mw-revslider-container').attr("style", "border: 3px solid red;");
-                
 
             } else if (window.location.hash.includes("#rollbackFailNoRev")) {
                 rw.visuals.toast.show("Could not rollback as there were no recent revisions by other users. Use the history page to try and manually revert.", false, false, 15000);
             }
             
-            if (window.location.href.includes("&diff=") && window.location.href.includes("&oldid=")) {
+            if ($("table.diff").length > 0) { // DETECT DIFF HERE - if diff table is present
                 // Diff page
                 rw.rollback.loadIcons(); // load rollback icons
-            } else if (window.location.href.includes("/wiki/Special:RecentChanges")) {
+            } else if (mw.config.get("wgRelevantPageName").includes("Special:RecentChanges")) {
                 // Recent changes page
                 // Add redwarn btn
                 $(".mw-specialpage-summary").prepend(`
@@ -347,7 +354,9 @@ function initRW() {
                 for (let item of document.getElementsByClassName("mdl-tooltip")) {
                     rw.visuals.register(item); 
                 }
-
+            
+            } else if (mw.config.get("wgRelevantPageName").includes("Special:Contributions")) { // Special contribs page
+                rw.rollback.contribsPageIcons(); // rollback icons on current
             } else if (window.location.hash.includes("#rwPatrolAttach-RWBC_")) { // Connect to recent changes window
                 let bcID = window.location.hash.split("-")[1]; // get bc id from hash
                 const bc = new BroadcastChannel(bcID); // open channel
@@ -366,7 +375,36 @@ function initRW() {
                     redirect(msg.data);
                 } 
             }
-            
+
+            // Log page in recently visited (rev13)
+            if (!mw.config.get("wgRelevantPageName").includes("Special:")) { // if not special page
+                try {
+                    if (window.localStorage.rwRecentlyVisited == null) window.localStorage.rwRecentlyVisited = "[]"; // if not set, reset to empty array
+                    // Load data
+                    let recentlyVisted = JSON.parse(window.localStorage.rwRecentlyVisited);
+                    let rVi = recentlyVisted.indexOf(mw.config.get("wgRelevantPageName")); // get index of, if not here -1
+                    if (rVi != -1) {
+                        // Page is already on the list, push to top
+                        recentlyVisted = arrayMove(recentlyVisted, rVi, 0); // move (from, to)
+                    } else {
+                        // Page isn't on list, let's add
+                        recentlyVisted.unshift(mw.config.get("wgRelevantPageName")); // adds at start of array
+                    }
+
+                    // Finally
+                    if (recentlyVisted.length > 20) {
+                        recentlyVisted.pop(); // remove last item to ensure list stays under 20 items
+                    }
+
+                    // Now save
+                    window.localStorage.rwRecentlyVisited = JSON.stringify(recentlyVisted);// Done!
+                } catch (error) { // on error (maybe corrupt value)
+                    console.error(error);
+                    window.localStorage.rwRecentlyVisited = "[]"; // try reset to empty array and hope for the best
+                }
+            }
+
+
             // Pending changes
             rw.PendingChangesReview.reviewPage(); // will auto check if possible ext and add icons
 

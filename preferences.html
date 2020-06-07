@@ -239,7 +239,13 @@ var onSettingsLoad = {};
         <section class="mdl-layout__tab-panel" id="scroll-tab-2">
         <div class="page-content">
             <!-- BEHAVIOR SETTINGS -->
-            <h5>Enable or Disable Features</h5>
+
+            <h5>Extensions</h5>
+            <!-- Install new template from key link-->
+            <strong><a href="#" onclick="window.parent.postMessage('installQTP');">Install New Quick Template Pack from Key</a></strong>
+            <hr/>
+
+            <h5>Control Features</h5>
             <!-- User right click menu rwDisableRightClickUser disable enable-->
             <strong>User right-click menu</strong><br />
             <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="rwDisableRightClickUserEnable">
@@ -250,6 +256,42 @@ var onSettingsLoad = {};
             <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="rwDisableRightClickUser">
                 <input type="radio" id="rwDisableRightClickUser" class="mdl-radio__button" name="rwDisableRightClickUser" value="disable">
                 <span class="mdl-radio__label">Disable</span>
+            </label>
+            <br />
+            <!-- Review Features -->
+            <strong>New Notice auto-select level</strong><br />
+            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="rwautoLevelSelectDisableEnable">
+                <input type="radio" id="rwautoLevelSelectDisableEnable" class="mdl-radio__button" name="rwautoLevelSelectDisable" value="enable" checked>
+                <span class="mdl-radio__label">Enable</span>
+            </label>
+            &nbsp;&nbsp;
+            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="rwautoLevelSelectDisable">
+                <input type="radio" id="rwautoLevelSelectDisable" class="mdl-radio__button" name="rwautoLevelSelectDisable" value="disable">
+                <span class="mdl-radio__label">Disable</span>
+            </label>
+            <br />
+            <!-- Rollback like or rollback -->
+            <strong>Rollback Method</strong><br />
+            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="rwRBOpt-rollbackLike">
+                <input type="radio" id="rwRBOpt-rollbackLike" class="mdl-radio__button" name="rollbackMethod" value="rollbackLike" checked>
+                <span class="mdl-radio__label">Rollback-Like</span>
+            </label>
+            &nbsp;&nbsp;
+            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="rwRBOpt-rollback">
+                <input type="radio" id="rwRBOpt-rollback" class="mdl-radio__button" name="rollbackMethod" value="rollback">
+                <span class="mdl-radio__label">Rollback (requires permissions)</span>
+            </label>
+            <br />
+            <!-- Review Features -->
+            <strong>Pending Changes Review Features</strong><br />
+            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="rwDisablePendingChangesEnable">
+                <input type="radio" id="rwDisablePendingChangesEnable" class="mdl-radio__button" name="rwDisablePendingChanges" value="enable" checked>
+                <span class="mdl-radio__label">Enable RedWarn</span>
+            </label>
+            &nbsp;&nbsp;
+            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="rwDisablePendingChanges">
+                <input type="radio" id="rwDisablePendingChanges" class="mdl-radio__button" name="rwDisablePendingChanges" value="disable">
+                <span class="mdl-radio__label">Disable RedWarn</span>
             </label>
             <br />
             <!-- Review Auto Accept -->

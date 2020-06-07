@@ -28,6 +28,14 @@ if (mw.config.get("wgRelevantPageName").includes("User:") || mw.config.get("wgRe
 pageIconHTML += `
     `+ (iconsLocation == "sidebar" ? "" : "&nbsp;&nbsp;&nbsp;") + ` <!-- no spacing on sidebar -->
     <!-- START PAGE ONLY ICONS -->
+
+    <!-- ONLY ON EDITABLE PAGES -->
+    `+ (mw.config.get("wgIsProbablyEditable") ? `
+    <div id="RwPageLock" class="icon material-icons"><span style="cursor: pointer;" onclick="rw.pageProtect.open();">lock</span></div>
+    <div class="mdl-tooltip mdl-tooltip--large" for="RwPageLock">
+        Manage Page Protection
+    </div>
+
     <div id="rwSpyIcon" class="icon material-icons"><span style="cursor: pointer;" onclick="rw.info.changeWatch.toggle();">notification_important</span></div>
     <div class="mdl-tooltip mdl-tooltip--large" for="rwSpyIcon">
         Alert on Change
@@ -42,6 +50,13 @@ pageIconHTML += `
     <div class="mdl-tooltip mdl-tooltip--large" for="mrevPg">
         Latest revision
     </div>
+    ` : `
+    <!-- UNEDITABLE ONLY ICON -->
+    <div id="RwPageLock" class="icon material-icons"><span style="cursor: pointer; color:red;" onclick="rw.pageProtect.open();">lock</span></div>
+    <div class="mdl-tooltip" for="RwPageLock">
+        You cannot edit this page. Click to manage page protection.
+    </div>
+    `) + ` <!-- END EDITABLE PAGES ONLY ICONS -->
 
     <div id="rwOpenPref" class="icon material-icons"><span style="cursor: pointer;" onclick="rw.ui.openPreferences();">settings</span></div>
     <div class="mdl-tooltip mdl-tooltip--large" for="rwOpenPref">
