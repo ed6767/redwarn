@@ -280,7 +280,7 @@ rw.quickTemplate = { // Quick template UI and loader
         addMessageHandler("qTTest`*", cI=>{
             saveHandler(cI, ()=> {
                 // Open normal apply window with sandbox target
-                rw.quickTemplate.applyTemplate(selectedPack, selectedTemplateI, "Sandbox for User Warnings");
+                rw.quickTemplate.applyTemplate(selectedPack, selectedTemplateI, "Sandbox for user warnings");
             });
         });
 

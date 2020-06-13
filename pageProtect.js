@@ -135,7 +135,7 @@ rw.pageProtect = { // Used for [[WP:RFPP]]
                 let headingToInsertUnder = "== "+ (requestType == "upgrade" ? "Current requests for increase in protection level" : "Current requests for reduction in protection level") +" ==";
                 
                 // Assemble text to add per page template
-                let text = `=== [[${mw.config.get("wgRelevantPageName").replace(/_/g, ' ')}]] ===
+                let text = `=== [[:${mw.config.get("wgRelevantPageName").replace(/_/g, ' ')}]] ===
 * {{pagelinks|${mw.config.get("wgRelevantPageName").replace(/_/g, ' ')}}}
 '''${requestDuration + " " + requestProtect.name}:''' ${changeCoreReason}. ${changeExtraInfo} `+ rw.sign();
 
@@ -180,9 +180,9 @@ rw.pageProtect = { // Used for [[WP:RFPP]]
                     if (locationOfLastLine == wikiTxtLines.length - 1) {
                         // To prevent to end notices squishing against eachother
                         // Same as without, but we just include the date string at bottom of page
-                        wikiTxtLines.push(["\n\n" + text]);
+                        wikiTxtLines.push(["\n" + text]);
                     } else {
-                        wikiTxtLines.splice(locationOfLastLine, 0, ["\n\n" + text]); // Add notice to array at correct position. Note the "" at the start is for a newline to seperate from prev content
+                        wikiTxtLines.splice(locationOfLastLine, 0, ["\n" + text]); // Add notice to array at correct position. Note the "" at the start is for a newline to seperate from prev content
                     }
 
                     // Process final string

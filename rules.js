@@ -19,7 +19,8 @@ var rules = [
         "warningLevels": [
             1,
             2,
-            3
+            3,
+            4
         ]
     },
     {
@@ -54,7 +55,7 @@ var rules = [
     },
     {
         "name": "Adding unreferenced defamatory information about living persons",
-        "catagory": "Behavior in articles",
+        "catagory": "Article Conduct Warnings",
         "template": "uw-biog",
         "warningLevels": [
             1,
@@ -66,7 +67,7 @@ var rules = [
     },
     {
         "name": "Addition of defamatory content",
-        "catagory": "Behavior in articles",
+        "catagory": "Article Conduct Warnings",
         "template": "uw-defamatory",
         "warningLevels": [
             1,
@@ -78,7 +79,7 @@ var rules = [
     },
     {
         "name": "Introducing deliberate factual errors",
-        "catagory": "Behavior in articles",
+        "catagory": "Article Conduct Warnings",
         "template": "uw-error",
         "warningLevels": [
             1,
@@ -89,7 +90,7 @@ var rules = [
     },
     {
         "name": "Frequent or mass changes to genres without consensus or reference",
-        "catagory": "Behavior in articles",
+        "catagory": "Article Conduct Warnings",
         "template": "uw-genre",
         "warningLevels": [
             1,
@@ -100,7 +101,7 @@ var rules = [
     },
     {
         "name": "Image-related vandalism",
-        "catagory": "Behavior in articles",
+        "catagory": "Article Conduct Warnings",
         "template": "uw-image",
         "warningLevels": [
             1,
@@ -112,7 +113,7 @@ var rules = [
     },
     {
         "name": "Using improper humor",
-        "catagory": "Behavior in articles",
+        "catagory": "Article Conduct Warnings",
         "template": "uw-joke",
         "warningLevels": [
             1,
@@ -124,7 +125,7 @@ var rules = [
     },
     {
         "name": "Adding original research, including unpublished syntheses of sources",
-        "catagory": "Behavior in articles",
+        "catagory": "Article Conduct Warnings",
         "template": "uw-nor",
         "warningLevels": [
             1,
@@ -135,7 +136,7 @@ var rules = [
     },
     {
         "name": "Censorship of material",
-        "catagory": "Behavior in articles",
+        "catagory": "Article Conduct Warnings",
         "template": "uw-notcensored",
         "warningLevels": [
             1,
@@ -145,7 +146,7 @@ var rules = [
     },
     {
         "name": "Ownership of articles",
-        "catagory": "Behavior in articles",
+        "catagory": "Article Conduct Warnings",
         "template": "uw-own",
         "warningLevels": [
             1,
@@ -157,7 +158,7 @@ var rules = [
     },
     {
         "name": "Removal of maintenance templates",
-        "catagory": "Behavior in articles",
+        "catagory": "Article Conduct Warnings",
         "template": "uw-tdel",
         "warningLevels": [
             1,
@@ -168,7 +169,7 @@ var rules = [
     },
     {
         "name": "Addition of unsourced or improperly cited material",
-        "catagory": "Behavior in articles",
+        "catagory": "Article Conduct Warnings",
         "template": "uw-unsourced",
         "warningLevels": [
             1,
@@ -393,7 +394,7 @@ var rules = [
     },
     {
         "name": "Bad AIV report",
-        "catagory": "Single Notice",
+        "catagory": "Reminders",
         "template": "uw-aiv",
         "warningLevels": [
             0
@@ -401,7 +402,7 @@ var rules = [
     },
     {
         "name": "Creating autobiographies",
-        "catagory": "Single Notice",
+        "catagory": "Reminders",
         "template": "uw-autobiography",
         "warningLevels": [
             0
@@ -409,7 +410,7 @@ var rules = [
     },
     {
         "name": "Adding incorrect categories",
-        "catagory": "Single Notice",
+        "catagory": "Reminders",
         "template": "uw-badcat",
         "warningLevels": [
             0
@@ -417,7 +418,7 @@ var rules = [
     },
     {
         "name": "Adding inappropriate entries to lists",
-        "catagory": "Single Notice",
+        "catagory": "Reminders",
         "template": "uw-badlistentry",
         "warningLevels": [
             0
@@ -425,7 +426,7 @@ var rules = [
     },
     {
         "name": "Being harsh to newcomers",
-        "catagory": "Single Notice",
+        "catagory": "Reminders",
         "template": "uw-bite",
         "warningLevels": [
             0
@@ -433,7 +434,7 @@ var rules = [
     },
     {
         "name": "Conflict of interest",
-        "catagory": "Single Notice",
+        "catagory": "Reminders",
         "template": "uw-coi",
         "warningLevels": [
             0
@@ -441,7 +442,7 @@ var rules = [
     },
     {
         "name": "Introducing controversial material",
-        "catagory": "Single Notice",
+        "catagory": "Reminders",
         "template": "uw-controversial",
         "warningLevels": [
             0
@@ -449,7 +450,7 @@ var rules = [
     },
     {
         "name": "Copying text to another page",
-        "catagory": "Single Notice",
+        "catagory": "Reminders",
         "template": "uw-copying",
         "warningLevels": [
             0
@@ -457,7 +458,7 @@ var rules = [
     },
     {
         "name": "Adding speculative or unconfirmed information",
-        "catagory": "Single Notice",
+        "catagory": "Reminders",
         "template": "uw-crystal",
         "warningLevels": [
             0
@@ -465,7 +466,7 @@ var rules = [
     },
     {
         "name": "Cut and paste moves",
-        "catagory": "Single Notice",
+        "catagory": "Reminders",
         "template": "uw-c&pmove",
         "warningLevels": [
             0
@@ -473,7 +474,7 @@ var rules = [
     },
     {
         "name": "Incorrect edit to a disambiguation page",
-        "catagory": "Single Notice",
+        "catagory": "Reminders",
         "template": "uw-dab",
         "warningLevels": [
             0
@@ -481,7 +482,7 @@ var rules = [
     },
     {
         "name": "Unnecessarily changing date formats",
-        "catagory": "Single Notice",
+        "catagory": "Reminders",
         "template": "uw-date",
         "warningLevels": [
             0
@@ -489,7 +490,7 @@ var rules = [
     },
     {
         "name": "Removing proper sources containing dead links",
-        "catagory": "Single Notice",
+        "catagory": "Reminders",
         "template": "uw-deadlink",
         "warningLevels": [
             0
@@ -497,7 +498,7 @@ var rules = [
     },
     {
         "name": "User should draft in userspace without the risk of speedy deletion",
-        "catagory": "Single Notice",
+        "catagory": "Reminders",
         "template": "uw-draftfirst",
         "warningLevels": [
             0
@@ -505,7 +506,7 @@ var rules = [
     },
     {
         "name": "Not using edit summary",
-        "catagory": "Single Notice",
+        "catagory": "Reminders",
         "template": "uw-editsummary",
         "warningLevels": [
             0
@@ -513,7 +514,7 @@ var rules = [
     },
     {
         "name": "Adding external links to the body of an article",
-        "catagory": "Single Notice",
+        "catagory": "Reminders",
         "template": "uw-elinbody",
         "warningLevels": [
             0
@@ -521,7 +522,7 @@ var rules = [
     },
     {
         "name": "Not communicating in English",
-        "catagory": "Single Notice",
+        "catagory": "Reminders",
         "template": "uw-english",
         "warningLevels": [
             0
@@ -529,7 +530,7 @@ var rules = [
     },
     {
         "name": "Hasty addition of speedy deletion tags",
-        "catagory": "Single Notice",
+        "catagory": "Reminders",
         "template": "uw-hasty",
         "warningLevels": [
             0
@@ -537,7 +538,7 @@ var rules = [
     },
     {
         "name": "Italicize books, films, albums, magazines, TV series, etc within articles",
-        "catagory": "Single Notice",
+        "catagory": "Reminders",
         "template": "uw-italicize",
         "warningLevels": [
             0
@@ -545,7 +546,7 @@ var rules = [
     },
     {
         "name": "Unnecessarily changing between British and American English",
-        "catagory": "Single Notice",
+        "catagory": "Reminders",
         "template": "uw-lang",
         "warningLevels": [
             0
@@ -553,7 +554,7 @@ var rules = [
     },
     {
         "name": "Excessive addition of redlinks or repeated blue links",
-        "catagory": "Single Notice",
+        "catagory": "Reminders",
         "template": "uw-linking",
         "warningLevels": [
             0
@@ -561,7 +562,7 @@ var rules = [
     },
     {
         "name": "Incorrect use of minor edits check box",
-        "catagory": "Single Notice",
+        "catagory": "Reminders",
         "template": "uw-minor",
         "warningLevels": [
             0
@@ -569,7 +570,7 @@ var rules = [
     },
     {
         "name": "Creating non-English articles",
-        "catagory": "Single Notice",
+        "catagory": "Reminders",
         "template": "uw-notenglish",
         "warningLevels": [
             0
@@ -577,7 +578,7 @@ var rules = [
     },
     {
         "name": "We use consensus, not voting",
-        "catagory": "Single Notice",
+        "catagory": "Reminders",
         "template": "uw-notvote",
         "warningLevels": [
             0
@@ -585,7 +586,7 @@ var rules = [
     },
     {
         "name": "Copying from public domain sources without attribution",
-        "catagory": "Single Notice",
+        "catagory": "Reminders",
         "template": "uw-plagiarism",
         "warningLevels": [
             0
@@ -593,7 +594,7 @@ var rules = [
     },
     {
         "name": "Use preview button to avoid mistakes",
-        "catagory": "Single Notice",
+        "catagory": "Reminders",
         "template": "uw-preview",
         "warningLevels": [
             0
@@ -601,7 +602,7 @@ var rules = [
     },
     {
         "name": "Indiscriminate removal of redlinks",
-        "catagory": "Single Notice",
+        "catagory": "Reminders",
         "template": "uw-redlink",
         "warningLevels": [
             0
@@ -609,7 +610,7 @@ var rules = [
     },
     {
         "name": "Reverting self tests",
-        "catagory": "Single Notice",
+        "catagory": "Reminders",
         "template": "uw-selfrevert",
         "warningLevels": [
             0
@@ -617,7 +618,7 @@ var rules = [
     },
     {
         "name": "Wikipedia is not a social network",
-        "catagory": "Single Notice",
+        "catagory": "Reminders",
         "template": "uw-socialnetwork",
         "warningLevels": [
             0
@@ -625,7 +626,7 @@ var rules = [
     },
     {
         "name": "Be bold and fix things yourself",
-        "catagory": "Single Notice",
+        "catagory": "Reminders",
         "template": "uw-sofixit",
         "warningLevels": [
             0
@@ -633,7 +634,7 @@ var rules = [
     },
     {
         "name": "Adding spoiler alerts or removing spoilers from appropriate sections",
-        "catagory": "Single Notice",
+        "catagory": "Reminders",
         "template": "uw-spoiler",
         "warningLevels": [
             0
@@ -641,7 +642,7 @@ var rules = [
     },
     {
         "name": "Talk in article",
-        "catagory": "Single Notice",
+        "catagory": "Reminders",
         "template": "uw-talkinarticle",
         "warningLevels": [
             0
@@ -649,7 +650,7 @@ var rules = [
     },
     {
         "name": "Not signing posts",
-        "catagory": "Single Notice",
+        "catagory": "Reminders",
         "template": "uw-tilde",
         "warningLevels": [
             0
@@ -657,7 +658,7 @@ var rules = [
     },
     {
         "name": "Posting at the top of talk pages",
-        "catagory": "Single Notice",
+        "catagory": "Reminders",
         "template": "uw-toppost",
         "warningLevels": [
             0
@@ -665,7 +666,7 @@ var rules = [
     },
     {
         "name": "Stale userspace draft",
-        "catagory": "Single Notice",
+        "catagory": "Reminders",
         "template": "uw-userspace draft finish",
         "warningLevels": [
             0
@@ -673,7 +674,7 @@ var rules = [
     },
     {
         "name": "Adding video game walkthroughs, cheats or instructions",
-        "catagory": "Single Notice",
+        "catagory": "Reminders",
         "template": "uw-vgscope",
         "warningLevels": [
             0
@@ -681,7 +682,7 @@ var rules = [
     },
     {
         "name": "Place user warning templates when reverting vandalism",
-        "catagory": "Single Notice",
+        "catagory": "Reminders",
         "template": "uw-warn",
         "warningLevels": [
             0
@@ -689,7 +690,7 @@ var rules = [
     },
     {
         "name": "Using inaccurate or inappropriate edit summaries",
-        "catagory": "Single Notice",
+        "catagory": "Reminders",
         "template": "uw-wrongsummary",
         "warningLevels": [
             0
@@ -697,7 +698,7 @@ var rules = [
     },
     {
         "name": "Potential three-revert rule violation; see also uw-ew",
-        "catagory": "Single Warning",
+        "catagory": "Policy Violation Warnings",
         "template": "uw-3rr",
         "warningLevels": [
             6
@@ -705,7 +706,7 @@ var rules = [
     },
     {
         "name": "Affiliate marketing",
-        "catagory": "Single Warning",
+        "catagory": "Policy Violation Warnings",
         "template": "uw-affiliate",
         "warningLevels": [
             6
@@ -713,7 +714,7 @@ var rules = [
     },
     {
         "name": "Use of multiple accounts (assuming good faith)",
-        "catagory": "Single Warning",
+        "catagory": "Policy Violation Warnings",
         "template": "uw-agf-sock",
         "warningLevels": [
             6
@@ -721,7 +722,7 @@ var rules = [
     },
     {
         "name": "Creating attack pages",
-        "catagory": "Single Warning",
+        "catagory": "Policy Violation Warnings",
         "template": "uw-attack",
         "warningLevels": [
             6
@@ -729,7 +730,7 @@ var rules = [
     },
     {
         "name": "Bot username",
-        "catagory": "Single Warning",
+        "catagory": "Policy Violation Warnings",
         "template": "uw-botun",
         "warningLevels": [
             6
@@ -738,7 +739,7 @@ var rules = [
     },
     {
         "name": "Canvassing",
-        "catagory": "Single Warning",
+        "catagory": "Policy Violation Warnings",
         "template": "uw-canvass",
         "warningLevels": [
             6
@@ -746,7 +747,7 @@ var rules = [
     },
     {
         "name": "Copyright violation",
-        "catagory": "Single Warning",
+        "catagory": "Policy Violation Warnings",
         "template": "uw-copyright",
         "warningLevels": [
             6
@@ -754,7 +755,7 @@ var rules = [
     },
     {
         "name": "Linking to copyrighted works violation",
-        "catagory": "Single Warning",
+        "catagory": "Policy Violation Warnings",
         "template": "uw-copyright-link",
         "warningLevels": [
             6
@@ -762,7 +763,7 @@ var rules = [
     },
     {
         "name": "Copyright violation (with explanation for new users)",
-        "catagory": "Single Warning",
+        "catagory": "Policy Violation Warnings",
         "template": "uw-copyright-new",
         "warningLevels": [
             6
@@ -770,7 +771,7 @@ var rules = [
     },
     {
         "name": "Removing {{copyvio}} template from articles",
-        "catagory": "Single Warning",
+        "catagory": "Policy Violation Warnings",
         "template": "uw-copyright-remove",
         "warningLevels": [
             6
@@ -778,7 +779,7 @@ var rules = [
     },
     {
         "name": "Edit summary triggering the edit filter",
-        "catagory": "Single Warning",
+        "catagory": "Policy Violation Warnings",
         "template": "uw-efsummary",
         "warningLevels": [
             6
@@ -786,7 +787,7 @@ var rules = [
     },
     {
         "name": "Edit warring (stronger wording)",
-        "catagory": "Single Warning",
+        "catagory": "Policy Violation Warnings",
         "template": "uw-ew",
         "warningLevels": [
             6
@@ -794,7 +795,7 @@ var rules = [
     },
     {
         "name": "Edit warring (softer wording for newcomers)",
-        "catagory": "Single Warning",
+        "catagory": "Policy Violation Warnings",
         "template": "uw-ewsoft",
         "warningLevels": [
             6
@@ -802,7 +803,7 @@ var rules = [
     },
     {
         "name": "Hijacking articles",
-        "catagory": "Single Warning",
+        "catagory": "Policy Violation Warnings",
         "template": "uw-hijacking",
         "warningLevels": [
             6
@@ -810,7 +811,7 @@ var rules = [
     },
     {
         "name": "Creating hoaxes",
-        "catagory": "Single Warning",
+        "catagory": "Policy Violation Warnings",
         "template": "uw-hoax",
         "warningLevels": [
             6
@@ -818,7 +819,7 @@ var rules = [
     },
     {
         "name": "Making legal threats",
-        "catagory": "Single Warning",
+        "catagory": "Policy Violation Warnings",
         "template": "uw-legal",
         "warningLevels": [
             6
@@ -826,7 +827,7 @@ var rules = [
     },
     {
         "name": "Editing while logged out",
-        "catagory": "Single Warning",
+        "catagory": "Policy Violation Warnings",
         "template": "uw-login",
         "warningLevels": [
             6
@@ -834,7 +835,7 @@ var rules = [
     },
     {
         "name": "Usage of multiple IPs",
-        "catagory": "Single Warning",
+        "catagory": "Policy Violation Warnings",
         "template": "uw-multipleIPs",
         "warningLevels": [
             6
@@ -842,7 +843,7 @@ var rules = [
     },
     {
         "name": "Personal info",
-        "catagory": "Single Warning",
+        "catagory": "Policy Violation Warnings",
         "template": "uw-pinfo",
         "warningLevels": [
             6
@@ -850,7 +851,7 @@ var rules = [
     },
     {
         "name": "Recreating salted articles under a different title",
-        "catagory": "Single Warning",
+        "catagory": "Policy Violation Warnings",
         "template": "uw-salt",
         "warningLevels": [
             6
@@ -858,7 +859,7 @@ var rules = [
     },
     {
         "name": "Sockpuppetry",
-        "catagory": "Single Warning",
+        "catagory": "Policy Violation Warnings",
         "template": "uw-socksuspect",
         "warningLevels": [
             6
@@ -866,7 +867,7 @@ var rules = [
     },
     {
         "name": "Userpage vandalism",
-        "catagory": "Single Warning",
+        "catagory": "Policy Violation Warnings",
         "template": "uw-upv",
         "warningLevels": [
             6
@@ -874,7 +875,7 @@ var rules = [
     },
     {
         "name": "Username is against policy",
-        "catagory": "Single Warning",
+        "catagory": "Policy Violation Warnings",
         "template": "uw-username",
         "warningLevels": [
             6
@@ -883,7 +884,7 @@ var rules = [
     },
     {
         "name": "Username is against policy, and conflict of interest",
-        "catagory": "Single Warning",
+        "catagory": "Policy Violation Warnings",
         "template": "uw-coi-username",
         "warningLevels": [
             6
@@ -892,7 +893,7 @@ var rules = [
     },
     {
         "name": "Userpage or subpage is against policy",
-        "catagory": "Single Warning",
+        "catagory": "Policy Violation Warnings",
         "template": "uw-userpage",
         "warningLevels": [
             6

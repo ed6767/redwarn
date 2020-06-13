@@ -31,21 +31,69 @@ rw.ui = {
         // Let's continue
 
         // Assemble rule listbox
-        let finalListBox = "";
+        let finalListBox = "<span>";
+        let currentHeading = "";
         rules.forEach((rule, i) => {
-            let style = "";
-            if (rule.name.length > 62) {
-                // Too long to fit
-                style="font-size:14px"
+            // Check if category is different to current heading first
+            if (rule.catagory != currentHeading) {
+                // Now generate a new heading and section for search to hide
+                finalListBox += `</span> <!-- close prior category -->
+                <span class="rwNoticeCatagory"> <!-- used for search -->
+                <div class="rwNoticeCatagoryHead" style="
+                    text-align: center;
+                    font-family: Roboto;
+                    font-weight: 300;
+                    width: 100%;
+                    cursor: pointer;
+                ">${rule.catagory}</div>`;
+
+                // A new heading is needed
+                currentHeading = rule.catagory; // set to ours for detection
             }
-            finalListBox += `<li
-            class="mdl-menu__item"
-            data-val="`+ i +`"
-            onmousedown="refreshLevels(`+i+`);"
-            style="`+style +`">
-                ${rule.name}
-            </li>`; // add dataselected if = autoSelectReasonIndex & autoselect is enabled
+
+            // Add appropriate list format per config
+            if (rw.config.rwNoticeListByTemplateName != "enable") {
+                // Standard listing by rule description
+                let style = "";
+                if (rule.name.length > 62) {
+                    // Too long to fit
+                    style="font-size:14px";
+                }
+                finalListBox += `<li
+                class="mdl-menu__item"
+                data-val="`+ i +`"
+                onmousedown="refreshLevels(`+i+`);"
+                style="`+style +`">
+                    ${rule.name} <!-- ${rule.template} (comment for search) -->
+                </li>`; // add dataselected if = autoSelectReasonIndex & autoselect is enabled
+            } else {
+                // List by template name
+                let style = "";
+                if (rule.name.length > 62) {
+                    // Too long to fit
+                    style="font-size:14px"; // style here applies to span that will show on hover
+                }
+                finalListBox += `<li
+                class="mdl-menu__item"
+                data-val="`+ i +`"
+                id="rwTemplateSelect${i}"
+                onmousedown="refreshLevels(`+i+`);">
+                    ${rule.template} <!-- ${rule.name} (comment for search) -->
+                </li>
+                <!-- Add script to change to reason on mouseover -->
+                <script>$("#rwTemplateSelect${i}").mouseenter(()=>{
+                    // Mouse has entered the box
+                    $("#rwTemplateSelect${i}").html(\`<span style="${style}">${rule.name}</span>\`); // set to rule name
+                });
+                $("#rwTemplateSelect${i}").mouseleave(()=>{
+                    // Mouse has entered the box
+                    $("#rwTemplateSelect${i}").html(\`${rule.template} <!-- ${rule.name} (comment for search) -->\`); // set to default
+                });
+                </script>
+                `; 
+            }
         });
+        finalListBox += `</span>`; // close final catagory
 
         // Setup preview handling
         addMessageHandler("generatePreview`*", m=>{
@@ -262,7 +310,13 @@ rw.ui = {
                                     "a level 4 final or ONLY warning"
                                 ][level] + " this month.", false, false, 4000);
                             });
-                        }
+                        },
+
+                        "filterLog": un=>redirect("https://en.wikipedia.org/w/index.php?title=Special:AbuseLog&wpSearchUser="+ un, true),  // Redirect to filter log page in new tab
+
+                        "blockLog": un=>redirect("https://en.wikipedia.org/w/index.php?title=Special:Log/block&page=User:"+ un, true),  // Redirect to block log page in new tab
+
+                        "allLog": un=>redirect("https://en.wikipedia.org/wiki/Special:Log/"+ un, true)  // Redirect to filter log page in new tab
 
                     })[act](targetUsername.trim());
                     
@@ -286,30 +340,15 @@ rw.ui = {
                             "accInfo": {name: "Central Auth"},
                             "usrPronouns": {"name": "Pronouns"},
                             "usrEditCount": {"name": "Edit Count"},
-                            "usrStanding": {"name": "Highest Warning"}
+                            "usrStanding": {"name": "Highest Warning"},
+                            "filterLog" : {name: "Edit Filter Log"},
+                            "blockLog" : {name: "Block Log"},
+                            "allLog" : {name: "All Logs"}
                         }
                     }  
                 }
             });
         }); // END USER ACTIONS CONTEXT MENU
-        // NON-CONTRUCTIVE QUICKROLLBACK BUTTON CONTEXT MENU
-        $(()=>{
-            $.contextMenu({
-                selector: '#rollBackNC', // Select non-constructive edit button
-                callback: (act, info)=>{
-                    // CALLBACK
-                    // Do the action for each action now.
-
-                    ({
-                        "rbTestEdits" : ()=>rw.rollback.apply('test edit.')  // Submit quick rollback
-                    })[act]();
-                    
-                },
-                items: {
-                    "rbTestEdits": {name: "Quick Rollback Test Edit"}
-                }
-            });
-        }); // NON-CONTRUCTIVE QUICKROLLBACK BUTTON CONTEXT MENU
 
         // TODO: add more, like Quick Template options ext.. and right-click on article link to begin rollback ext.
 
@@ -440,7 +479,7 @@ rw.ui = {
                     "format": "json",
                     "token" : mw.user.tokens.get("csrfToken"),
                     "title" : aivPage,
-                    "summary" : "Reporting "+ target +" [[WP:REDWARN|(RedWarn "+ rw.version +")]]", // summary sign here
+                    "summary" : `Reporting [[Special:Contributions/${target}|${target}]] [[WP:REDWARN|(RedWarn ${rw.version})]]`, // summary sign here
                     "text": finalTxt
                 }).done(dt => {
                     // We done. Check for errors, then callback appropriately
@@ -517,7 +556,7 @@ rw.ui = {
         } 
     },
 
-    "confirmDialog": (content, pBtnTxt, pBtnClick, sBtnTxt, sBtnClick, extraHeight) => {
+    "confirmDialog": (content, pBtnTxt, pBtnClick, sBtnTxt, sBtnClick, extraHeight, noExtraLines) => { // noExtraLines removes the <br/> tags
         // Confirm dialog (yes, no, ext...)
         addMessageHandler("sBtn", sBtnClick);
         addMessageHandler("pBtn", pBtnClick);

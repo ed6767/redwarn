@@ -50,10 +50,10 @@
     </div>
     `+ (hideUserInfo ? "</span>" : "") + ` <!-- end span if hidden -->
     <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label getmdl-select" style="width:100%" id="reasonsBox">
-        <input type="text" value="" class="mdl-textfield__input" id="template" style="font-size:14px;" onkeypress="searchReasons();" autocomplete="off">
+        <input type="text" value="" class="mdl-textfield__input" id="template" style="font-size:14px;" autocomplete="off">
         <input type="hidden" value="" name="template">
         <i class="mdl-icon-toggle__label material-icons">keyboard_arrow_down</i>
-        <label for="template" class="mdl-textfield__label">Reason</label>
+        <label for="template" class="mdl-textfield__label">${(rw.config.rwNoticeListByTemplateName != "enable") ? `Reason` : `Template`}</label> <!-- show reason or template based on config-->
         <ul for="template" class="mdl-menu mdl-menu--bottom-left mdl-js-menu" style="overflow-y: scroll;height: 300px">
             `+ finalListBox +`
         </ul>
@@ -333,21 +333,37 @@
     };
 
     // Search reasons
-    // Very basic but it works TODO: work on, including selecting best match on ENTER
-    function searchReasons() {
+    // Very basic but it works 
+    $("input#template").keydown(e=>{
+        if (e.key == "Enter") {
+            $($(".mdl-menu__item:visible")[0]).click(); // invoke click on first visible to select
+            refreshLevels($($(".mdl-menu__item:visible")[0]).attr("data-val")); // refresh preview
+            return; // exit
+        }
+
+        // Else, continue normal search
         let toSearch = document.getElementById("template").value.toLowerCase();
         $(".mdl-menu__item").each((x,y)=>{
-            if (y.innerText.toLowerCase().includes(toSearch)) {
+            if ($(y).html().toLowerCase().includes(toSearch)) {
                 $(y).show();
             } else {
                 $(y).hide();
             }
         });
-    }
+
+            // Clear out headers with nothing under
+            $("span.rwNoticeCatagory").each((i, el)=>{
+                if ($(el).find("li.mdl-menu__item:visible").length == 0) {
+                    $(el).find(".rwNoticeCatagoryHead").hide();
+                } else {
+                    $(el).find(".rwNoticeCatagoryHead").show();
+                }
+            });
+    });
 
 
 
-    var grabPreview = (fromCustomTxt)=> {
+    var grabPreview = fromCustomTxt=> {
         // Generate preview
         // Wikitext grab
         if (fromCustomTxt) {

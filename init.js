@@ -11,7 +11,7 @@ window.onfocus = function(){
 }
 
 // Array extention
-arrayMove = (arr, old_index, new_index) => {
+var arrayMove = (arr, old_index, new_index) => {
     if (new_index >= arr.length) {
         var k = new_index - arr.length + 1;
         while (k--) {
@@ -43,7 +43,7 @@ if (rw != null) {
     mw.notify("Warning! You have two versions of RedWarn installed at once! Please edit your common.js or skin js files to ensure that you only use one instance to prevent issues.");
 }
 var rw = {
-    "version" : "rev13", // don't forget to change each version!
+    "version" : "rev14", // don't forget to change each version!
     "logoHTML" : `<span style="font-family:Roboto;font-weight: 300;text-shadow:2px 2px 4px #0600009e;"><span style="color:red">Red</span>Warn</span>`, // HTML of the logo
     "logoShortHTML" : `<span style="font-family:Roboto;font-weight: 300;text-shadow:2px 2px 4px #0600009e;"><span style="color:red">R</span>W</span>`, // Short HTML of the logo
     "sign": ()=>{return atob("fn5+fg==")}, // we have to do this because mediawiki will swap this out with devs sig.
@@ -65,14 +65,7 @@ var rw = {
     "visuals" : {
         "init" : (callback) => {
             // Welcome message
-            console.log(`
-+------------------------------+
-|                              |
-| RedWarn (c) 2020 Ed E        |
-| and contributors             |
-|                              |
-+------------------------------+
-            `);
+            console.log("RedWarn "+ rw.version + " - (c) Ed E and contributors");
             // Load MDL and everything needed, then callback when all loaded
             $('head').append(`
                 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.contextMenu.min.css">
@@ -111,11 +104,11 @@ var rw = {
         "pageIcons" : ()=> {
             // Thanks to User:Awesome Aasim for the suggestion and some sample code.
             try {
-                let pageIconHTML = "<span id='rwPGIconContainer' style='display:none;'>"; // obj it is appended to
+                let pageIconHTML = "<div id='rwPGIconContainer' style='display:none;display: inline-block;'>"; // obj it is appended to
                 // Possible icons locations: default (page icons area) or sidebar
                 let iconsLocation = rw.config.pgIconsLocation ? rw.config.pgIconsLocation : "default"; // If set in config, use config
                 /* [[[[include pageIcons.html]]]] */
-                pageIconHTML += "</span>"; // close contianer
+                pageIconHTML += "</div>"; // close contianer
                 if (iconsLocation == "default") {
                     try {
                         document.getElementsByClassName("mw-indicators mw-body-content")[0].innerHTML += pageIconHTML; // Append our icons to the page icons
@@ -264,6 +257,9 @@ function initRW() {
             rw = {}; // WIPE OUT ENTIRE CLASS. We're not doing anything here.
             // That's it
         });
+
+        // User blacklist
+        importScript('User:Ed6767/redwarn/blacklist.js'); // everything is handled within this script
 
         // We have perms, let's continue.
 
